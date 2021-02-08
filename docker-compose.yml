@@ -10,8 +10,10 @@ services:
     ports:
       - 5678:5678
     environment:
-      - SERVER_NAME=${DOMAIN?Variable not set}
-      - SERVER_HOST=http://${DOMAIN?Variable not set}
+#      - SERVER_NAME=${DOMAIN?Variable not set}
+#      - SERVER_HOST=http://${DOMAIN?Variable not set}
+      - SERVER_NAME=127.0.0.1
+      - SERVER_HOST=http://127.0.0.1
       - PORT=5678
     build:
       context: ./backend
