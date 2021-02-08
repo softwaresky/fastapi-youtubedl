@@ -1,6 +1,6 @@
 FROM python:3.8
 
-#WORKDIR /app/
+WORKDIR /app/
 
 RUN pip install fastapi uvicorn
 
