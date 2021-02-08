@@ -1,0 +1,17 @@
+version: "3.3"
+services:
+
+  backend:
+    image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
+    env_file:
+      - .env
+    ports:
+      - 5678:5678
+    environment:
+      - SERVER_NAME=${DOMAIN?Variable not set}
+      - SERVER_HOST=http://${DOMAIN?Variable not set}
+      - PORT=5678
+    build:
+      context: ./backend
+      dockerfile: backend.dockerfile
+    command: /start-reload.sh
