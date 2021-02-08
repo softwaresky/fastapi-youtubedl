@@ -25,14 +25,19 @@
 #ENV PYTHONPATH=/app
 
 
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
+#FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
+FROM python3.8
 
 WORKDIR /app/
 
-COPY ./app/requirements.txt /app/requirements.txt
-RUN python3 -m pip install --upgrade pip
-RUN pip3 install --upgrade setuptools
-RUN pip3 install --requirement /app/requirements.txt
+#COPY ./app/requirements.txt /app/requirements.txt
+#RUN python3 -m pip install --upgrade pip
+#RUN pip3 install --upgrade setuptools
+RUN pip install --requirement /app/requirements.txt
 
 ENV PYTHONPATH=/app
 COPY ./app /app
+
+EXPOSE 5678
+
+CMD uvicorn app.main:app --host 127.0.0.1 --port 5678
