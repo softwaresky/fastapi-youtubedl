@@ -33,10 +33,10 @@ WORKDIR /app/
 #COPY ./app/requirements.txt /app/requirements.txt
 #RUN python3 -m pip install --upgrade pip
 #RUN pip3 install --upgrade setuptools
-RUN pip install --requirement /app/requirements.txt
+RUN pip install --requirement /backend/app/requirements.txt
 
 ENV PYTHONPATH=/app
-COPY ./app /app
+COPY /backend/app /app
 
 EXPOSE 5678
 
