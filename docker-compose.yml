@@ -1,8 +1,10 @@
-version: "3.3"
+#version: "3.3"
+version: "2"
 services:
 
   backend:
-    image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
+#    image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
+    image: 'youtubedl-backend:latest'
     env_file:
       - .env
     ports:
