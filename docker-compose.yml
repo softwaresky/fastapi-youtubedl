@@ -19,7 +19,7 @@ services:
     build:
       context: ./backend
       dockerfile: backend.dockerfile
-    command: /start-reload.sh
+#    command: /start-reload.sh
     volumes:
       - /srv/dev-disk-by-uuid-8A9A7E519A7E39B1/Downloads/youtube-dl:/youtube-dl
 
