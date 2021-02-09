@@ -3,6 +3,7 @@ version: "2"
 services:
 
   backend:
+    container_name: 'youtube-dl-web-backend'
 #    image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
     image: 'youtubedl-backend:latest'
     env_file:
@@ -21,3 +22,14 @@ services:
     command: /start-reload.sh
     volumes:
       - /srv/dev-disk-by-uuid-8A9A7E519A7E39B1/Downloads/youtube-dl:/youtube-dl
+
+  frontend:
+    container_name: 'youtube-dl-web-frontend'
+#    image: '${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}'
+    image: 'youtubedl-frontend:latest'
+    build:
+      context: ./frontend
+      args:
+        FRONTEND_ENV: development
+    ports:
+      - 6578:6578
