@@ -1,36 +1,19 @@
-#FROM python:3.8
-#
-#WORKDIR /app/
-#
-#RUN pip3 install fastapi uvicorn
-#
-#COPY ./app/requirements.txt /app/requirements.txt
-#RUN pip3 install --requirement /app/requirements.txt
-#
-#EXPOSE 5678
-#
-#ENV PYTHONPATH=/app
-#COPY ./app /app
+FROM tiangolo/uvicorn-gunicorn:rspi-python3.8
 
-FROM python:3.8
-
-RUN pip3 install --no-cache-dir "uvicorn[standard]" gunicorn
-
-COPY ./start.sh /start.sh
-RUN chmod +x /start.sh
-
-COPY ./gunicorn_conf.py /gunicorn_conf.py
-
-COPY ./start-reload.sh /start-reload.sh
-RUN chmod +x /start-reload.sh
-
-COPY ./app /app
 WORKDIR /app/
 
+# RUN pip3 install fastapi uvicorn
+
+COPY ./app/requirements.txt /app/requirements.txt
+#RUN python3 -m pip install --upgrade pip
+#RUN pip3 install --upgrade setuptools
+RUN pip3 install --requirement /app/requirements.txt
+
+EXPOSE 5678
+
 ENV PYTHONPATH=/app
+COPY ./app /app
 
-EXPOSE 80
-
-# Run the start script, it will check for an /app/prestart.sh script (e.g. for migrations)
-# And then will start Gunicorn with Uvicorn
-CMD ["/start.sh"]
+#CMD uvicorn app.main:app --host 127.0.0.1 --port 5678
+#CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5678"]
+#CMD ["/start-reload.sh"]
