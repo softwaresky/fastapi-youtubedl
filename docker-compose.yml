@@ -1,35 +1,36 @@
-#version: "3.3"
-version: "2"
+version: "3.3"
 services:
 
   backend:
-    container_name: 'youtube-dl-web-backend'
-#    image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
-    image: 'youtubedl-backend:latest'
+    container_name: '${PROJECT_NAME}-backend'
+    image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
+#    image: 'youtubedl-backend:latest'
     env_file:
       - .env
     ports:
-      - 5678:5678
+      - 8765:8765
     environment:
-#      - SERVER_NAME=${DOMAIN?Variable not set}
-#      - SERVER_HOST=http://${DOMAIN?Variable not set}
-      - SERVER_NAME=127.0.0.1
-      - SERVER_HOST=http://127.0.0.1
-      - PORT=5678
+      - SERVER_NAME=${DOMAIN?Variable not set}
+      - SERVER_HOST=http://${DOMAIN?Variable not set}
+#      - SERVER_NAME=127.0.0.1
+#      - SERVER_HOST=http://127.0.0.1
+      - PORT=8765
     build:
       context: ./backend
       dockerfile: backend.dockerfile
-#    command: /start-reload.sh
+    command: /start-reload.sh
     volumes:
       - /srv/dev-disk-by-uuid-8A9A7E519A7E39B1/Downloads/youtube-dl:/youtube-dl
 
   frontend:
-    container_name: 'youtube-dl-web-frontend'
-#    image: '${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}'
-    image: 'youtubedl-frontend:latest'
+    container_name: '${PROJECT_NAME}-frontend'
+    image: '${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}'
+#    image: 'youtubedl-frontend:latest'
+    env_file:
+      - .env
     build:
       context: ./frontend
       args:
         FRONTEND_ENV: development
     ports:
-      - 6578:6578
+      - 7865:7865

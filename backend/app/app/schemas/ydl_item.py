@@ -8,7 +8,7 @@ from pydantic import BaseModel
 class YdlItemBase(BaseModel):
     url: Optional[str]
     ydl_opts: Optional[dict]
-    status: Optional[int]
+    status: Optional[int] = 1
 
 
 # Properties to receive on YdlItem creation
@@ -26,6 +26,7 @@ class YdlItemInDBBase(YdlItemBase):
     id: int
     url: Optional[str]
     ydl_opts: Optional[dict]
+    output_log: Optional[dict]
     timestamp: Optional[datetime.datetime]
     status: Optional[int]
 

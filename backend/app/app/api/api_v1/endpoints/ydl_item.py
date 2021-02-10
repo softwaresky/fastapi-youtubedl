@@ -1,6 +1,6 @@
 from typing import Any, List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from app.lib.youtube_thread import ThreadManager
@@ -11,7 +11,18 @@ from app.api import deps
 router = APIRouter()
 
 thread_manager = ThreadManager(db=deps.SessionLocal())
-thread_manager.start()
+# thread_manager.start()
+
+
+@router.on_event("startup")
+def startup():
+    thread_manager.start()
+
+
+@router.on_event("shutdown")
+def shutdown():
+    thread_manager.join()
+
 
 @router.get("/", response_model=List[schemas.YdlItem])
 def read_items(
@@ -37,10 +48,6 @@ def read_thread_items(
     id: int,
     db: Session = Depends(deps.get_db),
 ) -> Any:
-    # import pprint
-    # pprint.pprint(jsonable_encoder(db.query(models.YdlItem).all()))
-
-    # return
 
     item = crud.ydl_item.get(db=db, id=id)
     if not item:
@@ -58,10 +65,6 @@ def create_item(
     Create new item.
     """
     item = crud.ydl_item.create(db=db, obj_in=item_in)
-    # if item:
-        # thread_manager.add_object(item.id, item.url)
-        # thread_manager.add_object(ydl_object=item)
-
     return item
 
 
@@ -109,5 +112,10 @@ def delete_item(
     item = crud.ydl_item.get(db=db, id=id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
+
+    if item:
+        thread_manager.remove_object(object_id=item.id)
+
     item = crud.ydl_item.remove(db=db, id=id)
+
     return item

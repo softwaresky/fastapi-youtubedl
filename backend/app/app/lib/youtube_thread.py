@@ -43,6 +43,9 @@ class ThreadYoutubeDl(threading.Thread):
         self.is_finished = False
         self.is_error = False
 
+        self.is_running = False
+        self.status = 1
+
     def ydl_item_hook(self, d):
 
         self.dict_data.update(d)
@@ -55,24 +58,27 @@ class ThreadYoutubeDl(threading.Thread):
 
     def run(self):
 
+        self.is_running = True
+        self.status = 2
+
         self.is_finished = False
         self.is_error = False
         # self.dict_data["msg"] = self.logger.msg
         self.dict_data.update(self.logger.msg)
 
-        # crud.ydl_item.update(db=self.db, db_obj=self.ydl_object, obj_in={"status": 2})
-        # try:
-        #     self.download_urls(url=self.url)
-        # except Exception as err:
-        #     crud.ydl_item.update(db=self.db, db_obj=self.ydl_object, obj_in={"status": 3})
-        # crud.ydl_item.update(db=self.db, db_obj=self.ydl_object, obj_in={"status": 4})
-
         try:
             self.download_urls(url=self.url)
             self.is_finished = True
+
+            self.is_running = False
+            self.status = 4
+
         except Exception as err:
             self.dict_data["err"] = f"{err}"
             self.is_error = True
+
+            self.is_running = False
+            self.status = 3
 
     def download_urls(self, url: str = "", do_calculate_pattern: bool = False):
 
@@ -88,8 +94,7 @@ class ThreadYoutubeDl(threading.Thread):
 
                         for dict_entry_ in info.get("entries", []):
 
-                            if [dict_entry_.get(key_) for key_ in ["series", "season_number", "episode_number"] if
-                                dict_entry_.get(key_)]:
+                            if [dict_entry_.get(key_) for key_ in ["series", "season_number", "episode_number"] if dict_entry_.get(key_)]:
                                 pattern = "%(series)s/%(season_number)s - %(season)s/%(episode_number)s - %(episode)s.%(ext)s"
                                 break
 
@@ -100,6 +105,7 @@ class ThreadYoutubeDl(threading.Thread):
                 ydl.params["outtmpl"] = os.path.join(settings.YOUTUBE_DL_DST, pattern)
 
             ydl.download([url])
+
 
 class ThreadManager(threading.Thread):
 
@@ -124,25 +130,48 @@ class ThreadManager(threading.Thread):
     def get_all_objects(self):
         return [self.get_object_data(id=id_) for id_ in self.dict_manager]
 
+    def remove_object(self, object_id=0):
+        if object_id in self.dict_manager:
+            self.dict_manager.pop(object_id)
+
     def run(self) -> None:
 
         while True:
 
             for ydl_item_ in crud.ydl_item.get_multi_by_status(db=self.db):
+                dict_update = {}
+
                 if ydl_item_.status == 1:
                     if len(self.dict_manager) < settings.MAXIMUM_QUEUE:
                         if ydl_item_.id not in self.dict_manager:
                             self.dict_manager[ydl_item_.id] = ThreadYoutubeDl(ydl_object=ydl_item_)
                         if not self.dict_manager[ydl_item_.id].is_alive():
                             self.dict_manager[ydl_item_.id].start()
-                            crud.ydl_item.update(db=self.db, db_obj=ydl_item_, obj_in={"status": 2})
+                            dict_update["status"] = 2
+                            dict_update["output_log"] = self.get_object_data(id=ydl_item_.id)
+                            # crud.ydl_item.update(db=self.db, db_obj=ydl_item_, obj_in={"status": 2, "output_log": self.get_object_data(id=ydl_item_.id)})
 
-                else:
-                    if ydl_item_.id in self.dict_manager:
-                        if self.dict_manager[ydl_item_.id].is_error:
-                            crud.ydl_item.update(db=self.db, db_obj=ydl_item_, obj_in={"status": 3})
-                        if self.dict_manager[ydl_item_.id].is_finished:
-                            ydl_item_ = crud.ydl_item.update(db=self.db, db_obj=ydl_item_, obj_in={"status": 4})
-                        if ydl_item_.status == 4:
-                            self.dict_manager.pop(ydl_item_.id)
+                # else:
+                thread_obj_ = self.dict_manager.get(ydl_item_.id)
+                if thread_obj_ and not thread_obj_.is_running:
+                    dict_update["status"] = self.dict_manager[ydl_item_.id].status
+                    dict_update["output_log"] = self.dict_manager[ydl_item_.id].get_data()
 
+                # if ydl_item_.id in self.dict_manager:
+                #     if not self.dict_manager[ydl_item_.id].is_running or ydl_item_.status != self.dict_manager[ydl_item_.id].status:
+                #         dict_update["status"] = self.dict_manager[ydl_item_.id].status
+                #         dict_update["output_log"] = self.dict_manager[ydl_item_.id].get_data()
+                #
+                #         # if self.dict_manager[ydl_item_.id].is_error:
+                #         #     dict_update["status"] = 3
+                #         #     dict_update["output_log"] = self.get_object_data(id=ydl_item_.id)
+                #         #     # crud.ydl_item.update(db=self.db, db_obj=ydl_item_, obj_in={"status": 3})
+                #         # if self.dict_manager[ydl_item_.id].is_finished:
+                #         #     dict_update["status"] = 4
+                #         #     dict_update["output_log"] = self.get_object_data(id=ydl_item_.id)
+                #         #     # ydl_item_ = crud.ydl_item.update(db=self.db, db_obj=ydl_item_, obj_in={"status": 4})
+                #         # # if ydl_item_.status == 4:
+                #         # #     self.dict_manager.pop(ydl_item_.id)
+
+                if dict_update:
+                    crud.ydl_item.update(db=self.db, db_obj=ydl_item_, obj_in=dict_update)

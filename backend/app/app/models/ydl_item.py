@@ -12,5 +12,5 @@ class YdlItem(Base):
     status = Column(Integer)
     timestamp = Column(DateTime, default=datetime.datetime.now)
     ydl_opts = Column(JSON)
-
+    output_log = Column(JSON)
 
