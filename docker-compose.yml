@@ -1,19 +1,20 @@
-version: "3.3"
+version: "2"
 services:
 
   backend:
-    container_name: '${PROJECT_NAME}-backend'
-    image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
-#    image: 'youtubedl-backend:latest'
+#    container_name: '${PROJECT_NAME}-backend'
+    container_name: 'fastapi-youtubedl'
+#    image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
+    image: 'youtubedl-backend:latest'
     env_file:
       - .env
     ports:
       - 8765:8765
     environment:
-      - SERVER_NAME=${DOMAIN?Variable not set}
-      - SERVER_HOST=http://${DOMAIN?Variable not set}
-#      - SERVER_NAME=127.0.0.1
-#      - SERVER_HOST=http://127.0.0.1
+#      - SERVER_NAME=${DOMAIN?Variable not set}
+#      - SERVER_HOST=http://${DOMAIN?Variable not set}
+      - SERVER_NAME=127.0.0.1
+      - SERVER_HOST=http://127.0.0.1
       - PORT=8765
     build:
       context: ./backend
@@ -23,9 +24,10 @@ services:
       - /srv/dev-disk-by-uuid-8A9A7E519A7E39B1/Downloads/youtube-dl:/youtube-dl
 
   frontend:
-    container_name: '${PROJECT_NAME}-frontend'
-    image: '${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}'
-#    image: 'youtubedl-frontend:latest'
+#    container_name: '${PROJECT_NAME}-frontend'
+    container_name: 'fastapi-youtubedl-frontend'
+#    image: '${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}'
+    image: 'youtubedl-frontend:latest'
     env_file:
       - .env
     build:

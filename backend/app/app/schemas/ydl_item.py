@@ -7,6 +7,7 @@ from pydantic import BaseModel
 # Shared properties
 class YdlItemBase(BaseModel):
     url: Optional[str]
+    do_calculate_pattern: Optional[bool] = False
     ydl_opts: Optional[dict]
     status: Optional[int] = 1
 
