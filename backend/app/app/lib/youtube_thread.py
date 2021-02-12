@@ -31,7 +31,6 @@ class ThreadYoutubeDl(threading.Thread):
         threading.Thread.__init__(self)
         self.ydl_object = ydl_object
         self.db = db
-        self.url = ydl_object.url
         self.logger = YdlLogger()
         self.dict_data = {}
 
@@ -40,8 +39,8 @@ class ThreadYoutubeDl(threading.Thread):
             'progress_hooks': [self.ydl_item_hook],
         }
         self.ydl_opts.update(ydl_object.ydl_opts)
-        self.is_finished = False
-        self.is_error = False
+        # self.is_finished = False
+        # self.is_error = False
 
         self.is_running = False
         self.status = 1
@@ -61,21 +60,21 @@ class ThreadYoutubeDl(threading.Thread):
         self.is_running = True
         self.status = 2
 
-        self.is_finished = False
-        self.is_error = False
+        # self.is_finished = False
+        # self.is_error = False
         # self.dict_data["msg"] = self.logger.msg
         self.dict_data.update(self.logger.msg)
 
         try:
-            self.download_urls(url=self.url)
-            self.is_finished = True
+            self.download_urls(url=self.ydl_object.url, do_calculate_pattern=self.ydl_object.do_calculate_pattern)
+            # self.is_finished = True
 
             self.is_running = False
             self.status = 4
 
         except Exception as err:
             self.dict_data["err"] = f"{err}"
-            self.is_error = True
+            # self.is_error = True
 
             self.is_running = False
             self.status = 3
