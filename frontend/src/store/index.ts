@@ -1,11 +1,20 @@
-import Vue from "vue";
-import Vuex from "vuex";
+import Vue from 'vue';
+import Vuex, {StoreOptions} from 'vuex';
+import {mainModule} from './state';
+import {ydlItemModule} from './ytdl_item';
+
+import {State} from './state';
 
 Vue.use(Vuex);
 
-export default new Vuex.Store({
-  state: {},
-  mutations: {},
-  actions: {},
-  modules: {}
-});
+const storeOptions: StoreOptions<State> = {
+  modules: {
+    main: mainModule,
+    ydlItem: ydlItemModule,
+
+  },
+};
+
+export const store = new Vuex.Store<State>(storeOptions);
+
+export default store;
