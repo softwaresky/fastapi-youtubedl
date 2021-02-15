@@ -1,5 +1,8 @@
 FROM python:3.8
 
+RUN apt-get update
+RUN apt-get install ffmpeg -y
+
 RUN pip3 install --no-cache-dir "uvicorn[standard]" gunicorn
 
 COPY ./start.sh /start.sh
@@ -23,3 +26,5 @@ EXPOSE 5678
 # Run the start script, it will check for an /app/prestart.sh script (e.g. for migrations)
 # And then will start Gunicorn with Uvicorn
 CMD ["/start.sh"]
+
+

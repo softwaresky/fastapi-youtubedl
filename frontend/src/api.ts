@@ -16,4 +16,7 @@ export const api = {
     async removeYdlItem(id: number) {
         return axios.delete(`${apiUrl}/api/v1/youtube-dl/${id}`);
     },
+    async getYdlItemLog(id: number) {
+        return axios.get(`${apiUrl}/api/v1/youtube-dl/object-data/${id}`);
+    },
 }

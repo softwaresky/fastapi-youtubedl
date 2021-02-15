@@ -31,7 +31,7 @@ export const actions = {
             console.log(error);
         }
     },
-    async actionUpdateYdlItem(context: MainContext, payload: { id: number; ydlItem: YdlItemState }) {
+    async actionUpdateYdlItem(context: MainContext, payload: { id: number; ydlItem: YdlItemUpdate }) {
         try {
 
             const response = await api.updateYdlItem(payload.id, payload.ydlItem);

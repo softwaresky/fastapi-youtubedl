@@ -4,10 +4,14 @@
       <router-link to="/">Home</router-link> |
 <!--      <router-link to="/ydl/new">Youtube Dl</router-link> |-->
       <router-link to="/ydl/new">Youtube Dl</router-link> |
+      <router-link to="/ydl/">List</router-link> |
       <router-link to="/new">New Youtube Dl</router-link> |
       <router-link to="/about">About</router-link>
     </div>
-    <router-view />
+    <div>
+      <router-view />
+    </div>
+
   </div>
 </template>
 
