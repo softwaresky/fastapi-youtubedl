@@ -62,7 +62,9 @@ def read_items_data(
     lst_items = crud.ydl_item.get_multi(db, skip=skip, limit=limit)
     if lst_items:
         for item_ in lst_items:
-            item_.output_log = thread_manager.get_object_data(item_.id)
+            dict_data_ = thread_manager.get_object_data(item_.id)
+            if dict_data_:
+                item_.output_log = dict_data_
             lst_result.append(item_)
 
     return lst_result
