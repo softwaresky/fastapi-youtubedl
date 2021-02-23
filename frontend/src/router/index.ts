@@ -42,7 +42,7 @@ const routes: Array<RouteConfig> = [
     component: () => import(/* webpackChunkName: "about" */ "@/views/ydl-item/YdlItemEdit.vue")
   },
   {
-    path: "/ydl/",
+    path: "/ydl/list",
     component: () => import(/* webpackChunkName: "about" */ "@/views/ydl-item/YdlItemsView.vue")
   },
   {
