@@ -4,12 +4,31 @@
     <data-tables
         :data="allYdlItems"
         :total="allYdlItems.length"
+        :table-props="{rowKey: 'id', 'default-sort': {prop: 'timestamp', order: 'ascending'}}"
     >
+      <el-table-column type="expand">
+        <template slot-scope="props">
+          <p>{{ props.row.output_log }}</p>
+        </template>
+      </el-table-column>
+
       <el-table-column
           label="Url"
           prop="url"
           sortable
       />
+      <el-table-column
+          label="Progress"
+          prop="tmp"
+      >
+        <template slot-scope="scope">
+          <el-progress :text-inside="true" :stroke-width="26"
+                       :percentage="customProgress(scope.row)">
+
+          </el-progress>
+
+        </template>
+      </el-table-column>
       <el-table-column
           label="Status"
           prop="status"
@@ -42,7 +61,7 @@
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
-import {dispatchCreateYdlItem, dispatchGetYdlItems, dispatchUpdateYdlItem} from '@/store/ytdl_item/actions';
+import {dispatchCreateYdlItem, dispatchGetYdlItems, dispatchUpdateYdlItem, dispatchGetYdlItemsData} from '@/store/ytdl_item/actions';
 import {readAllYtdItems} from '@/store/ytdl_item/getters';
 import moment from 'moment';
 
@@ -59,7 +78,13 @@ enum statusName {
 export default class YdlItemsView extends Vue {
 
   public async mounted() {
-    await dispatchGetYdlItems(this.$store);
+    // await dispatchGetYdlItems(this.$store);
+    this.dispatchGetYdlItemsData();
+    setInterval(this.dispatchGetYdlItemsData,6000);
+  }
+
+  public async dispatchGetYdlItemsData() {
+    await dispatchGetYdlItemsData(this.$store);
   }
 
   get allYdlItems() {
@@ -83,6 +108,16 @@ export default class YdlItemsView extends Vue {
     }
 
     return cellValue;
+  }
+
+  public customProgress(row: any) {
+    let percentage = 0;
+
+    if (row.output_log && row.output_log.hasOwnProperty('downloaded_bytes')) {
+      percentage = ((row.output_log.downloaded_bytes / row.output_log.total_bytes) * 100);
+
+    }
+    return percentage;
   }
 }
 </script>

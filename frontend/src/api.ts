@@ -7,6 +7,9 @@ export const api = {
     async getYdlItems() {
         return axios.get<YdlItemState[]>(`${apiUrl}/api/v1/youtube-dl/`);
     },
+    async getYdlItemsData() {
+        return axios.get<YdlItemState[]>(`${apiUrl}/api/v1/youtube-dl/items-data`);
+    },
     async createYdlItem(data: YdlItemCreate) {
         return axios.post(`${apiUrl}/api/v1/youtube-dl/`, data);
     },

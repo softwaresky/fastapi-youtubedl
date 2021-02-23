@@ -19,6 +19,16 @@ export const actions = {
             console.log(error);
         }
     },
+    async actionGetYdlItemsData(context: MainContext) {
+        try {
+            const response = await api.getYdlItemsData();
+            if (response) {
+                commitSetYdlItems(context, response.data);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    },
     async actionCreateYdlItem(context: MainContext, payload: YdlItemCreate) {
 
         try {
@@ -59,6 +69,7 @@ export const actions = {
 const {dispatch} = getStoreAccessors<YdlItemListState, State>('');
 
 export const dispatchGetYdlItems = dispatch(actions.actionGetYdlItems);
+export const dispatchGetYdlItemsData = dispatch(actions.actionGetYdlItemsData);
 export const dispatchCreateYdlItem = dispatch(actions.actionCreateYdlItem);
 export const dispatchUpdateYdlItem = dispatch(actions.actionUpdateYdlItem);
 export const dispatchRemoveYdlItem = dispatch(actions.actionRemoveYdlItem);
