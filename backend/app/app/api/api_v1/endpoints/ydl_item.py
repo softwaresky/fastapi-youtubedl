@@ -11,6 +11,8 @@ from app.api import deps
 router = APIRouter()
 
 thread_manager = ThreadManager(db=deps.SessionLocal())
+
+
 # thread_manager.start()
 
 
@@ -26,9 +28,9 @@ def shutdown():
 
 @router.get("/", response_model=List[schemas.YdlItem])
 def read_items(
-    db: Session = Depends(deps.get_db),
-    skip: int = 0,
-    limit: int = 100,
+        db: Session = Depends(deps.get_db),
+        skip: int = 0,
+        limit: int = 100,
 ) -> Any:
     """
     Retrieve items.
@@ -36,30 +38,66 @@ def read_items(
 
     return crud.ydl_item.get_multi(db, skip=skip, limit=limit)
 
+
 @router.get("/list")
 def read_thread_items(
         db: Session = Depends(deps.get_db)
 ) -> List:
-
     return thread_manager.get_all_objects()
+
+@router.get("/all-thread-info")
+def read_thread_info(
+        db: Session = Depends(deps.get_db)
+) -> List:
+    return thread_manager.get_all_thread_info()
+
+@router.get("/items-data", response_model=List[schemas.YdlItem])
+def read_items_data(
+        db: Session = Depends(deps.get_db),
+        skip: int = 0,
+        limit: int = 100,
+
+) -> List:
+    lst_result = []
+    lst_items = crud.ydl_item.get_multi(db, skip=skip, limit=limit)
+    if lst_items:
+        for item_ in lst_items:
+            item_.output_log = thread_manager.get_object_data(item_.id)
+            lst_result.append(item_)
+
+    return lst_result
+
 
 @router.get("/object-data/{id}")
 def read_thread_items(
-    id: int,
-    db: Session = Depends(deps.get_db),
+        id: int,
+        db: Session = Depends(deps.get_db),
 ) -> Any:
-
     item = crud.ydl_item.get(db=db, id=id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
     return thread_manager.get_object_data(item.id)
 
+@router.get("/stop-thread/{id}")
+def stop_thread(
+        id: int,
+        db: Session = Depends(deps.get_db),
+) -> Any:
+
+    is_stop = thread_manager.stop_thread_by_id(item_id=id)
+
+    return {
+        "id": id,
+        'is_stop': is_stop
+    }
+
+
 @router.post("/", response_model=schemas.YdlItem)
 def create_item(
-    *,
-    db: Session = Depends(deps.get_db),
-    item_in: schemas.YdlItemCreate,
+        *,
+        db: Session = Depends(deps.get_db),
+        item_in: schemas.YdlItemCreate,
 ) -> Any:
     """
     Create new item.
@@ -70,10 +108,10 @@ def create_item(
 
 @router.put("/{id}", response_model=schemas.YdlItem)
 def update_item(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: int,
-    item_in: schemas.YdlItemUpdate,
+        *,
+        db: Session = Depends(deps.get_db),
+        id: int,
+        item_in: schemas.YdlItemUpdate,
 ) -> Any:
     """
     Update an item.
@@ -87,9 +125,9 @@ def update_item(
 
 @router.get("/{id}", response_model=schemas.YdlItem)
 def read_item(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: int,
+        *,
+        db: Session = Depends(deps.get_db),
+        id: int,
 ) -> Any:
     """
     Get item by ID.
@@ -102,9 +140,9 @@ def read_item(
 
 @router.delete("/{id}", response_model=schemas.YdlItem)
 def delete_item(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: int,
+        *,
+        db: Session = Depends(deps.get_db),
+        id: int,
 ) -> Any:
     """
     Delete an item.
