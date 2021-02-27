@@ -1,7 +1,8 @@
 <template>
   <div class="input-container">
     <h3>Add new Youtube for download</h3>
-    <form @submit.prevent="submitYdlItem">
+<!--    <form @submit.prevent="submitYdlItem">-->
+    <form @submit.prevent="submitTest">
       <div class="form-group">
         <label for="input-url">Enter an https://youtube.com/ URL</label>
         <input v-model="ydlObj.url"
@@ -10,7 +11,13 @@
                id="input-url"
                placeholder="https://www.youtube.com/..."
                size="30"
+               @change="changedUrlInput"
                required>
+        <label for="input-formats"></label>
+        <select name="formats" id="input-formats" v-model="selectedFormat" @change="changedFormat($event.target.value)">
+          <option value="0">-- format --</option>
+          <option v-for="(format, index) in readUrlInfo.formats" :key="index" :value="format.format_id">{{format.format}} {{format.fps}} {{format.ext}} </option>
+        </select>
       </div>
       <div class="form-group-check">
         <fieldset>
@@ -48,9 +55,9 @@
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
-import {YdlItemCreate, YdlItemUpdate} from '@/store/ytdl_item/state';
-import {dispatchCreateYdlItem, dispatchGetYdlItems, dispatchUpdateYdlItem} from '@/store/ytdl_item/actions'
-import {readYtdItem} from '@/store/ytdl_item/getters'
+import {YdlItemCreate, YdlItemUpdate, YdlUrlInfoCreate} from '@/store/ytdl_item/state';
+import {dispatchCreateYdlItem, dispatchGetYdlItems, dispatchUpdateYdlItem, dispatchGetYdlUrlInfo} from '@/store/ytdl_item/actions'
+import {readYtdItem, readYtdUrlInfo} from '@/store/ytdl_item/getters'
 
 @Component
 export default class YdlItemEdit extends Vue {
@@ -61,14 +68,20 @@ export default class YdlItemEdit extends Vue {
     'ydl_opts': {},
     status: 1
   };
-  public ydlOpts = "";
+  public ydlOpts = "{}";
   public isPlaylist = false;
   public isOnlyAudio = false;
   public btnTitle = "Add New YoutubeDl item";
+  public selectedFormat = 0;
 
   get currentYtdItem() {
     return readYtdItem(this.$store)(+this.$router.currentRoute.params.id)
   }
+
+  get readUrlInfo() {
+    return readYtdUrlInfo(this.$store);
+  }
+
 
   public async mounted() {
     await dispatchGetYdlItems(this.$store);
@@ -81,6 +94,49 @@ export default class YdlItemEdit extends Vue {
     }
   }
 
+  public async changedUrlInput() {
+
+    if (this.ydlObj.url) {
+
+      const urlInfo: YdlUrlInfoCreate = {
+        url: this.ydlObj.url,
+        'ydl_opts': this.ydlObj.ydl_opts
+      }
+
+      await dispatchGetYdlUrlInfo(this.$store, urlInfo);
+
+    }
+  }
+
+  public changedFormat(value: any) {
+
+    let ydlOptsTmp = {};
+
+    if (value > 0) {
+      try {
+        ydlOptsTmp = {
+          ...JSON.parse(this.ydlOpts),
+          format: value
+        }
+      } catch (error) {
+        // console.log(error);
+      }
+    }
+
+    this.ydlOpts = JSON.stringify(ydlOptsTmp);
+
+  }
+
+  public submitTest() {
+    let ydlOpts = {};
+
+    try {
+      ydlOpts = JSON.parse(this.ydlOpts);
+    } catch (error) {
+      // console.log(error);
+    }
+    console.log(ydlOpts);
+  }
 
   public async submitYdlItem() {
 
@@ -93,6 +149,19 @@ export default class YdlItemEdit extends Vue {
       if (this.ydlObj.url) {
 
         let ydlOpts = {};
+
+        // try {
+        //   ydlOpts = JSON.parse(this.ydlOpts);
+        // } catch (error) {
+        //   console.log(error);
+        // }
+
+        if (this.selectedFormat > 0) {
+          ydlOpts = {
+            ...ydlOpts,
+            "format": this.selectedFormat
+          }
+        }
 
         if (!this.isPlaylist) {
           ydlOpts = {
@@ -112,8 +181,7 @@ export default class YdlItemEdit extends Vue {
           }
         }
         this.ydlObj['ydl_opts'] = ydlOpts;
-        // console.log(this.ydlObj);
-        // console.log(this.testOptions);
+
         await dispatchCreateYdlItem(this.$store, this.ydlObj);
       }
     }

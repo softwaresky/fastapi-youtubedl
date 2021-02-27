@@ -26,7 +26,12 @@ export interface YdlItemUpdate {
     output_log?: object | null;
 }
 
+export interface YdlUrlInfoCreate {
+    url: string;
+    ydl_opts?: object | null;
+}
 
 export interface YdlItemListState {
     ydlItems: YdlItemState[];
+    ydlUrlInfo: {} | null;
 }

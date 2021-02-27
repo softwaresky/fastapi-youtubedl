@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {apiUrl} from '@/env';
-import {YdlItemState, YdlItemCreate, YdlItemUpdate} from '@/store/ytdl_item/state';
+import {YdlItemState, YdlItemCreate, YdlItemUpdate, YdlUrlInfoCreate} from '@/store/ytdl_item/state';
 
 export const api = {
 
@@ -9,6 +9,9 @@ export const api = {
     },
     async getYdlItemsData() {
         return axios.get<YdlItemState[]>(`${apiUrl}/api/v1/youtube-dl/items-data`);
+    },
+    async getYdlUrlInfo(data: YdlUrlInfoCreate) {
+        return axios.post(`${apiUrl}/api/v1/youtube-dl/ydl-url-info`, data);
     },
     async createYdlItem(data: YdlItemCreate) {
         return axios.post(`${apiUrl}/api/v1/youtube-dl/`, data);

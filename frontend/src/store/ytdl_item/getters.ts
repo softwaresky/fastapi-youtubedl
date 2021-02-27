@@ -13,10 +13,13 @@ export const getters = {
         }
     },
 
+    getYdlUrlInfo: (state: YdlItemListState) => state.ydlUrlInfo
+
 }
 
 const {read} = getStoreAccessors<YdlItemListState, State>('');
 
 export const readAllYtdItems = read(getters.getYtdItems);
 export const readYtdItem = read(getters.getYtdItem);
+export const readYtdUrlInfo = read(getters.getYdlUrlInfo);
 
