@@ -1,6 +1,5 @@
-from typing import Optional, List
+from typing import Optional
 import datetime
-import enum
 from pydantic import BaseModel
 
 
@@ -43,3 +42,8 @@ class YdlItem(YdlItemInDBBase):
 # Properties properties stored in DB
 class YdlItemInDB(YdlItemInDBBase):
     pass
+
+
+class YdlUrl(BaseModel):
+    url: str = ""
+    ydl_opts: Optional[dict] = {}

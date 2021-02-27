@@ -203,3 +203,19 @@ class ThreadManager(threading.Thread):
 
                 if dict_update:
                     crud.ydl_item.update(db=self.db, db_obj=ydl_item_, obj_in=dict_update)
+
+def get_url_info(url="", ydl_opts={}):
+
+    if url:
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            dict_info = ydl.extract_info(url, download=False)
+            lst_audio_formats = [format_ for format_ in dict_info.get("formats", []) if format_.get('vcodec') == 'none']
+            lst_video_formats = [format_ for format_ in dict_info.get("formats", []) if format_.get('vcodec') != 'none']
+            dict_info["best_audio_format"] = lst_audio_formats[-1] if lst_audio_formats else {}
+            dict_info["best_video_format"] = lst_video_formats[-1] if lst_video_formats else {}
+            dict_info["prepare_filename"] = os.path.join(settings.YOUTUBE_DL_DST, ydl.prepare_filename(dict_info))
+
+
+            return dict_info
+
+    return {}

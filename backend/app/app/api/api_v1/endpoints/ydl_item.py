@@ -1,9 +1,9 @@
-from typing import Any, List
+from typing import Any, List, Dict
 
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from app.lib.youtube_thread import ThreadManager
+from app.lib.youtube_thread import ThreadManager, get_url_info
 from fastapi.encoders import jsonable_encoder
 from app import crud, models, schemas
 from app.api import deps
@@ -50,6 +50,13 @@ def read_thread_info(
         db: Session = Depends(deps.get_db)
 ) -> List:
     return thread_manager.get_all_thread_info()
+
+@router.post("/ydl-url-info")
+def read_ydl_url_info(
+        ydl_url_in: schemas.YdlUrl
+) -> Any:
+
+    return get_url_info(**jsonable_encoder(ydl_url_in))
 
 @router.get("/items-data", response_model=List[schemas.YdlItem])
 def read_items_data(
@@ -138,7 +145,6 @@ def read_item(
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     return item
-
 
 @router.delete("/{id}", response_model=schemas.YdlItem)
 def delete_item(

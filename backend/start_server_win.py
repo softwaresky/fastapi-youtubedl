@@ -21,7 +21,7 @@ if env_file:
 os.system("python ./backend/app/app/backend_pre_start.py")
 os.system("python ./backend/app/app/initial_data.py")
 
-PORT = os.environ.get("PORT", 5678)
+PORT = os.environ.get("PORT", 8765)
 HOST = os.environ.get("HOST", "127.0.0.1")
 
 uvicorn.run(main.app, host=HOST, port=PORT)
