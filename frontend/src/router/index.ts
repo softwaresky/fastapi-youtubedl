@@ -1,44 +1,21 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
-import Home from "../views/Home.vue";
-import RouterComponent from '@/components/layout/RouterComponent.vue';
 
 Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
   {
     path: "/",
-    name: "Home",
-    component: Home,
-    // children: [
-    //   {
-    //     path: 'ydl',
-    //     children: [
-    //       {
-    //         path: 'new',
-    //         name: 'ydl-new',
-    //         component: () => import(/* webpackChunkName: "about" */ "@/views/ydl-item/YdlItemEdit.vue")
-    //       },
-    //       {
-    //         path: 'edit/:id',
-    //         name: 'ydl-edit',
-    //         component: () => import(/* webpackChunkName: "about" */ "@/views/ydl-item/YdlItemEdit.vue")
-    //       }
-    //     ]
-    //   }
-    // ]
-  },
-  {
-    path: "/about",
-    name: "About",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/About.vue")
+    redirect: "/ydl/list"
   },
   {
     path: "/ydl/new",
+    name: "ydl-new",
+    component: () => import(/* webpackChunkName: "about" */ "@/views/ydl-item/YdlItemEdit.vue")
+  },
+  {
+    path: "/ydl/edit/:id",
+    name: "ydl-edit",
     component: () => import(/* webpackChunkName: "about" */ "@/views/ydl-item/YdlItemEdit.vue")
   },
   {
