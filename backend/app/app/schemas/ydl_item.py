@@ -9,7 +9,7 @@ class YdlItemBase(BaseModel):
     do_calculate_pattern: Optional[bool] = False
     ydl_opts: Optional[dict]
     status: Optional[int] = 1
-
+    info: Optional[dict] = {}
 
 # Properties to receive on YdlItem creation
 class YdlItemCreate(YdlItemBase):

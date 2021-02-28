@@ -103,7 +103,7 @@ class ThreadYoutubeDl(threading.Thread):
                                 pattern = "%(playlist)s/%(chapter_number)s - %(chapter)s/%(title)s.%(ext)s"
                                 break
 
-                ydl.params["outtmpl"] = os.path.join(settings.YOUTUBE_DL_DST, pattern)
+                ydl.params["outtmpl"] = os.path.abspath(os.path.join(settings.YOUTUBE_DL_DST, pattern))
 
             ydl.download([url])
 
