@@ -1,8 +1,7 @@
 <template>
   <div class="input-container">
     <h3>Add new Youtube for download</h3>
-<!--    <form @submit.prevent="submitYdlItem">-->
-    <form @submit.prevent="submitTest">
+    <form @submit.prevent="submitYdlItem">
       <div class="form-group">
         <label for="input-url">Enter an https://youtube.com/ URL</label>
         <input v-model="ydlObj.url"
@@ -22,8 +21,9 @@
       <div class="form-group-check">
         <fieldset>
           <legend>Additional options </legend>
-          <input type="checkbox" v-model="isPlaylist" name="Playlist" >Playlist<br>
-          <input type="checkbox" v-model="isOnlyAudio" name="Only Audio">Only Audio<br>
+<!--          <input type="checkbox" v-model="isPlaylist" name="Playlist" @change="changedIsPlaylist($event.target.checked)">Playlist<br>-->
+          <input type="checkbox" v-model="isPlaylist" name="Playlist" @change="changedIsPlaylist($event.target.checked)">Playlist<br>
+          <input type="checkbox" v-model="isOnlyAudio" name="Only Audio" @change="changedAudioOnly($event.target.checked)">Only Audio<br>
         </fieldset>
       </div>
       <div class="form-group-check">
@@ -36,7 +36,7 @@
       <div class="form-group">
         <label for="textarea-additional-options">Additional Options: </label>
         <textarea
-                  v-model="ydlOpts"
+                  v-model="ydlOptsStr"
                   name="textarea-additional-options"
                   id="textarea-additional-options"
                   placeholder="Enter Additional Options in JSON format."
@@ -59,6 +59,15 @@ import {YdlItemCreate, YdlItemUpdate, YdlUrlInfoCreate} from '@/store/ytdl_item/
 import {dispatchCreateYdlItem, dispatchGetYdlItems, dispatchUpdateYdlItem, dispatchGetYdlUrlInfo} from '@/store/ytdl_item/actions'
 import {readYtdItem, readYtdUrlInfo} from '@/store/ytdl_item/getters'
 
+function JsonParse(value: string) {
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+
 @Component
 export default class YdlItemEdit extends Vue {
 
@@ -66,9 +75,10 @@ export default class YdlItemEdit extends Vue {
     url: "",
     'do_calculate_pattern': false,
     'ydl_opts': {},
+    info: {},
     status: 1
   };
-  public ydlOpts = "{}";
+  public ydlOpts = {};
   public isPlaylist = false;
   public isOnlyAudio = false;
   public btnTitle = "Add New YoutubeDl item";
@@ -82,6 +92,9 @@ export default class YdlItemEdit extends Vue {
     return readYtdUrlInfo(this.$store);
   }
 
+  get ydlOptsStr() {
+    return JSON.stringify(this.ydlOpts);
+  }
 
   public async mounted() {
     await dispatchGetYdlItems(this.$store);
@@ -91,6 +104,11 @@ export default class YdlItemEdit extends Vue {
       this.ydlObj = {
         ...this.currentYtdItem
       };
+    }
+
+    this.ydlOpts = {
+      ...this.ydlOpts,
+      noplaylist: true,
     }
   }
 
@@ -108,81 +126,115 @@ export default class YdlItemEdit extends Vue {
     }
   }
 
-  public changedFormat(value: any) {
-
-    let ydlOptsTmp = {};
+  public changedFormat(value: number) {
 
     if (value > 0) {
-      try {
-        ydlOptsTmp = {
-          ...JSON.parse(this.ydlOpts),
-          format: value
-        }
-      } catch (error) {
-        // console.log(error);
+      this.ydlOpts = {
+        ...this.ydlOpts,
+        format: value,
+      };
+    } else {
+      if ("format" in this.ydlOpts) {
+        delete this.ydlOpts["format"];
       }
     }
+  }
 
-    this.ydlOpts = JSON.stringify(ydlOptsTmp);
+  public changedIsPlaylist(checked: boolean) {
+
+    if (checked) {
+      if ('noplaylist' in this.ydlOpts) {
+        delete this.ydlOpts["noplaylist"];
+      }
+    } else {
+      this.ydlOpts = {
+        ...this.ydlOpts,
+        noplaylist: !checked,
+      };
+    }
 
   }
 
-  public submitTest() {
-    let ydlOpts = {};
+  public changedAudioOnly(checked: boolean) {
 
-    try {
-      ydlOpts = JSON.parse(this.ydlOpts);
-    } catch (error) {
-      // console.log(error);
+    if (checked) {
+
+      this.ydlOpts = {
+        ...this.ydlOpts,
+        'format': 'bestaudio/best',
+        'postprocessors': [{
+          'key': 'FFmpegExtractAudio',
+          'preferredcodec': 'mp3',
+          'preferredquality': '192',
+        }],
+      }
+      // if (!("format" in this.ydlOpts)) {
+      //   this.ydlOpts = {
+      //     ...this.ydlOpts,
+      //     "format": 'bestaudio/best',
+      //   }
+      // }
+    } else {
+      if ("postprocessors" in this.ydlOpts) {
+        delete this.ydlOpts["postprocessors"];
+      }
+      if ("format" in this.ydlOpts) {
+        if (typeof this.ydlOpts["format"] === "string") {
+          delete this.ydlOpts["format"];
+        }
+
+      }
+
     }
-    console.log(ydlOpts);
+
   }
 
   public async submitYdlItem() {
 
     if (this.currentYtdItem) {
       const ydlItemUpdate: YdlItemUpdate = {
-        ...this.ydlObj
+        ...this.ydlObj,
+        info: this.readUrlInfo
       }
       await dispatchUpdateYdlItem(this.$store, {id: this.currentYtdItem.id, ydlItem: ydlItemUpdate});
     } else {
       if (this.ydlObj.url) {
 
-        let ydlOpts = {};
+        this.ydlObj = {
+          ...this.ydlObj,
+          info: this.readUrlInfo
+        }
 
-        // try {
-        //   ydlOpts = JSON.parse(this.ydlOpts);
-        // } catch (error) {
-        //   console.log(error);
+        // let ydlOpts = {};
+
+        // if (this.selectedFormat > 0) {
+        //   ydlOpts = {
+        //     ...ydlOpts,
+        //     "format": this.selectedFormat
+        //   }
         // }
 
-        if (this.selectedFormat > 0) {
-          ydlOpts = {
-            ...ydlOpts,
-            "format": this.selectedFormat
-          }
-        }
+        // if (!this.isPlaylist) {
+        //   ydlOpts = {
+        //     ...ydlOpts,
+        //     'noplaylist': true
+        //   }
+        // }
 
-        if (!this.isPlaylist) {
-          ydlOpts = {
-            ...ydlOpts,
-            'noplaylist': true
-          }
-        }
-        if (this.isOnlyAudio) {
-          ydlOpts = {
-            ...ydlOpts,
-            'format': 'bestaudio/best',
-            'postprocessors': [{
-              'key': 'FFmpegExtractAudio',
-              'preferredcodec': 'mp3',
-              'preferredquality': '192',
-            }],
-          }
-        }
-        this.ydlObj['ydl_opts'] = ydlOpts;
-
-        await dispatchCreateYdlItem(this.$store, this.ydlObj);
+        // if (this.isOnlyAudio) {
+        //   ydlOpts = {
+        //     ...ydlOpts,
+        //     'format': 'bestaudio/best',
+        //     'postprocessors': [{
+        //       'key': 'FFmpegExtractAudio',
+        //       'preferredcodec': 'mp3',
+        //       'preferredquality': '192',
+        //     }],
+        //   }
+        // }
+        this.ydlObj['ydl_opts'] = this.ydlOpts;
+        console.log(this.ydlObj);
+        // await dispatchCreateYdlItem(this.$store, this.ydlObj);
       }
     }
 

@@ -6,6 +6,7 @@ export interface YdlItemState {
     timestamp: string;
     ydl_opts: object | null;
     output_log: object | null;
+    info: object | null;
 }
 
 export interface YdlItemCreate {
@@ -15,6 +16,7 @@ export interface YdlItemCreate {
     timestamp?: string;
     ydl_opts?: object | null;
     output_log?: object | null;
+    info?: object | null;
 }
 
 export interface YdlItemUpdate {
@@ -24,6 +26,7 @@ export interface YdlItemUpdate {
     timestamp?: string;
     ydl_opts?: object | null;
     output_log?: object | null;
+    info?: object | null;
 }
 
 export interface YdlUrlInfoCreate {
