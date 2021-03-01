@@ -42,11 +42,12 @@ class ThreadYoutubeDl(threading.Thread):
             'progress_hooks': [self.ydl_item_hook],
         }
         self.ydl_opts.update(ydl_object.ydl_opts)
-        # self.is_finished = False
-        # self.is_error = False
-
         self.is_running = False
         self.status = 1
+
+    def __del__(self):
+        logger.info(f"__del__ => {self.is_alive()}")
+        self.join()
 
     def ydl_item_hook(self, d):
 
@@ -63,22 +64,15 @@ class ThreadYoutubeDl(threading.Thread):
         self.is_running = True
         self.status = 2
 
-        # self.is_finished = False
-        # self.is_error = False
-        # self.dict_data["msg"] = self.logger.msg
         self.dict_data.update(self.logger.msg)
 
         try:
             self.download_urls(url=self.ydl_object.url, do_calculate_pattern=self.ydl_object.do_calculate_pattern)
-            # self.is_finished = True
-
             self.is_running = False
             self.status = 4
 
         except Exception as err:
             self.dict_data["err"] = f"{err}"
-            # self.is_error = True
-
             self.is_running = False
             self.status = 3
 
@@ -153,7 +147,7 @@ class ThreadManager(threading.Thread):
 
     def remove_object(self, object_id=0):
         if object_id in self.dict_manager:
-            self.dict_manager.pop(object_id)
+            del self.dict_manager[object_id]
 
     def run(self) -> None:
 
@@ -182,24 +176,8 @@ class ThreadManager(threading.Thread):
                     dict_update["output_log"] = thread_obj_.get_data()
 
                     if thread_obj_.status == 4:
-                        removed_thread = self.dict_manager.pop(ydl_item_.id)
-                        logger.info(f"Removed: [{ydl_item_.id}] {removed_thread}")
-
-                # if ydl_item_.id in self.dict_manager:
-                #     if not self.dict_manager[ydl_item_.id].is_running or ydl_item_.status != self.dict_manager[ydl_item_.id].status:
-                #         dict_update["status"] = self.dict_manager[ydl_item_.id].status
-                #         dict_update["output_log"] = self.dict_manager[ydl_item_.id].get_data()
-                #
-                #         # if self.dict_manager[ydl_item_.id].is_error:
-                #         #     dict_update["status"] = 3
-                #         #     dict_update["output_log"] = self.get_object_data(id=ydl_item_.id)
-                #         #     # crud.ydl_item.update(db=self.db, db_obj=ydl_item_, obj_in={"status": 3})
-                #         # if self.dict_manager[ydl_item_.id].is_finished:
-                #         #     dict_update["status"] = 4
-                #         #     dict_update["output_log"] = self.get_object_data(id=ydl_item_.id)
-                #         #     # ydl_item_ = crud.ydl_item.update(db=self.db, db_obj=ydl_item_, obj_in={"status": 4})
-                #         # # if ydl_item_.status == 4:
-                #         # #     self.dict_manager.pop(ydl_item_.id)
+                        self.remove_object(ydl_item_.id)
+                        logger.info(f"Removed: [{ydl_item_.id}]")
 
                 if dict_update:
                     crud.ydl_item.update(db=self.db, db_obj=ydl_item_, obj_in=dict_update)
