@@ -1,75 +1,62 @@
 <template>
   <div class="input-container">
     <h3>Add new Youtube for download</h3>
-    <form @submit.prevent="submitYdlItem">
-      <div class="form-group">
-        <label for="input-url">Enter an https://youtube.com/ URL</label>
-        <input v-model="ydlObj.url"
-               type="url"
-               name="input-url"
-               id="input-url"
-               placeholder="https://www.youtube.com/..."
-               size="30"
-               @change="changedUrlInput"
-               required>
-        <label for="input-formats"></label>
-        <select name="formats" id="input-formats" v-model="selectedFormat" @change="changedFormat($event.target.value)">
-          <option value="0">-- format --</option>
-          <option v-for="(format, index) in readUrlInfo.formats" :key="index" :value="format.format_id">{{format.format}} {{format.fps}} {{format.ext}} </option>
-        </select>
-      </div>
-      <div class="form-group-check">
-        <fieldset>
-          <legend>Additional options </legend>
-<!--          <input type="checkbox" v-model="isPlaylist" name="Playlist" @change="changedIsPlaylist($event.target.checked)">Playlist<br>-->
-          <input type="checkbox" v-model="isPlaylist" name="Playlist" @change="changedIsPlaylist($event.target.checked)">Playlist<br>
-          <input type="checkbox" v-model="isOnlyAudio" name="Only Audio" @change="changedAudioOnly($event.target.checked)">Only Audio<br>
-        </fieldset>
-      </div>
-      <div class="form-group-check">
-        <input v-model="ydlObj.do_calculate_pattern"
-               type="checkbox"
-               name="input-do-calculate-pattern"
-               id="input-do-calculate-pattern"/>
-        <label for="input-do-calculate-pattern">Auto calculate pattern</label>
-      </div>
-      <div class="form-group">
-        <label for="textarea-additional-options">Additional Options: </label>
-        <textarea
-                  v-model="ydlOptsStr"
-                  name="textarea-additional-options"
-                  id="textarea-additional-options"
-                  placeholder="Enter Additional Options in JSON format."
-                  rows="6"
-                  cols="50"
-        />
+    <el-form ref="form" :model="formInputs" :rules="rules" label-width="120px">
+      <el-form-item label="Youtube Url: " prop="url">
+        <el-input v-model="formInputs.url" @input="changedUrlInput" placeholder="https://www.youtube.com/..."></el-input>
+      </el-form-item>
+      <el-form-item label="Format: " >
+        <el-select v-model="formInputs.format">
+          <el-option value="0" label="best"> </el-option>
+          <el-option v-for="(format, index) in readUrlInfo.formats" :key="index" :value="format.format_id" :label="`${format.format} ${format.fps} ${format.ext}`">
+          </el-option>
+        </el-select>
+      </el-form-item>
 
-      </div>
-      <div class="form-group">
-        <button class="btn input">{{ btnTitle }}</button>
-      </div>
+      <el-form-item label="">
+        <el-checkbox v-model="formInputs.isPlaylist" >Playlist</el-checkbox>
+        <el-checkbox v-model="formInputs.isOnlyAudio" >Only Audio</el-checkbox>
+        <el-checkbox v-model="formInputs.doCalculatePattern" >Auto calculate pattern</el-checkbox>
+      </el-form-item>
 
-    </form>
+      <el-form-item label="">
+        <el-collapse >
+          <el-collapse-item title="Advanced options"  >
+            <el-input type="textarea" v-model="formInputs.ydlOptsAddStr" placeholder="Add more options" :rows="5" ></el-input>
+          </el-collapse-item>
+        </el-collapse>
+        <div v-if="!ydlOptsAddValidate">
+          <p>
+            * textarea value require JSON structure.
+          </p>
+        </div>
+        <div>
+          {{ydlOptsFull}}
+        </div>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="submitYdlItem">{{btnTitle}}</el-button>
+      </el-form-item>
+    </el-form>
   </div>
 </template>
 
 <script lang="ts">
-import {Component, Vue} from "vue-property-decorator";
-import {YdlItemCreate, YdlItemUpdate, YdlUrlInfoCreate} from '@/store/ytdl_item/state';
-import {dispatchCreateYdlItem, dispatchGetYdlItems, dispatchUpdateYdlItem, dispatchGetYdlUrlInfo} from '@/store/ytdl_item/actions'
+import {Component, Vue, Emit, Prop} from "vue-property-decorator";
+import {YdlItemCreate, YdlItemUpdate, YdlUrlInfoCreate, YdlItemState} from '@/store/ytdl_item/state';
+import {
+  dispatchCreateYdlItem,
+  dispatchGetYdlItems,
+  dispatchUpdateYdlItem,
+  dispatchGetYdlUrlInfo
+} from '@/store/ytdl_item/actions'
 import {readYtdItem, readYtdUrlInfo} from '@/store/ytdl_item/getters'
-
-function JsonParse(value: string) {
-  try {
-    return JSON.parse(value);
-  } catch (error) {
-    console.log(error);
-  }
-}
-
 
 @Component
 export default class YdlItemEdit extends Vue {
+
+  @Prop({type: Object as () => YdlItemState})
+  public data!: YdlItemState
 
   public ydlObj: YdlItemCreate = {
     url: "",
@@ -78,13 +65,35 @@ export default class YdlItemEdit extends Vue {
     info: {},
     status: 1
   };
-  public ydlOpts = {};
-  public isPlaylist = false;
-  public isOnlyAudio = false;
-  public btnTitle = "Add New YoutubeDl item";
-  public selectedFormat = 0;
+  public formInputs = {
+    url: "",
+    format: "0",
+    isPlaylist: false,
+    isOnlyAudio: false,
+    doCalculatePattern: false,
+    ydlOptsAddStr: "{}"
+  };
 
+  public rules = {
+    url: [
+      { required: true, message: 'Please input youtube url', trigger: 'blur' }
+    ]
+  };
+
+  public ydlOptsAddStr = "{}";
+  public ydlOptsAddValidate = true;
+
+  get btnTitle() {
+    if (this.currentYtdItem ) {
+      return "Edit"
+    }
+    return "Create"
+  }
   get currentYtdItem() {
+
+    if (this.data && this.data.id > 0) {
+      return this.data;
+    }
     return readYtdItem(this.$store)(+this.$router.currentRoute.params.id)
   }
 
@@ -92,101 +101,89 @@ export default class YdlItemEdit extends Vue {
     return readYtdUrlInfo(this.$store);
   }
 
-  get ydlOptsStr() {
-    return JSON.stringify(this.ydlOpts);
+  get ydlOptsValues () {
+
+    let ydlOpts = {}
+
+    if (this.formInputs.format > "0") {
+      ydlOpts = {
+        ...ydlOpts,
+        format: this.formInputs.format
+      }
+    }
+    if (!this.formInputs.isPlaylist) {
+      ydlOpts = {
+        ...ydlOpts,
+        noplaylist: true
+      }
+    }
+
+    if (this.formInputs.isOnlyAudio) {
+      ydlOpts = {
+        ...ydlOpts,
+        postprocessors: [{
+          'key': 'FFmpegExtractAudio',
+          'preferredcodec': 'mp3',
+          'preferredquality': '192',
+        }],
+
+        // extractaudio: true,
+        // audioformat: "mp3",
+    }
+
+      if (!("format" in ydlOpts)) {
+        ydlOpts = {
+          ...ydlOpts,
+          format: 'bestaudio/best',
+        }
+      }
+    }
+
+
+    return ydlOpts;
+  }
+
+  get ydlOptsFull () {
+
+    let ydlOptsAdd = {};
+    try {
+      ydlOptsAdd = JSON.parse(this.formInputs.ydlOptsAddStr);
+      this.ydlOptsAddValidate = true;
+    } catch (error) {
+      this.ydlOptsAddValidate = false;
+    }
+
+    return {
+      ...this.ydlOptsValues,
+      ...ydlOptsAdd
+    }
   }
 
   public async mounted() {
     await dispatchGetYdlItems(this.$store);
 
     if (this.currentYtdItem) {
-      this.btnTitle = 'Edit';
-      this.ydlObj = {
-        ...this.currentYtdItem
+      this.formInputs = {
+        ...this.formInputs,
+        ...this.currentYtdItem.ydl_opts,
+        url: this.currentYtdItem.url,
+        doCalculatePattern: this.currentYtdItem.do_calculate_pattern
       };
     }
 
-    this.ydlOpts = {
-      ...this.ydlOpts,
-      noplaylist: true,
-    }
   }
 
   public async changedUrlInput() {
 
-    if (this.ydlObj.url) {
+    if (this.formInputs.url) {
+      this.ydlObj.url = this.formInputs.url;
 
       const urlInfo: YdlUrlInfoCreate = {
         url: this.ydlObj.url,
         'ydl_opts': this.ydlObj.ydl_opts
       }
-
       await dispatchGetYdlUrlInfo(this.$store, urlInfo);
-
     }
-  }
-
-  public changedFormat(value: number) {
-
-    if (value > 0) {
-      this.ydlOpts = {
-        ...this.ydlOpts,
-        format: value,
-      };
-    } else {
-      if ("format" in this.ydlOpts) {
-        delete this.ydlOpts["format"];
-      }
-    }
-  }
-
-  public changedIsPlaylist(checked: boolean) {
-
-    if (checked) {
-      if ('noplaylist' in this.ydlOpts) {
-        delete this.ydlOpts["noplaylist"];
-      }
-    } else {
-      this.ydlOpts = {
-        ...this.ydlOpts,
-        noplaylist: !checked,
-      };
-    }
-
-  }
-
-  public changedAudioOnly(checked: boolean) {
-
-    if (checked) {
-
-      this.ydlOpts = {
-        ...this.ydlOpts,
-        'format': 'bestaudio/best',
-        'postprocessors': [{
-          'key': 'FFmpegExtractAudio',
-          'preferredcodec': 'mp3',
-          'preferredquality': '192',
-        }],
-      }
-      // if (!("format" in this.ydlOpts)) {
-      //   this.ydlOpts = {
-      //     ...this.ydlOpts,
-      //     "format": 'bestaudio/best',
-      //   }
-      // }
-    } else {
-      if ("postprocessors" in this.ydlOpts) {
-        delete this.ydlOpts["postprocessors"];
-      }
-      if ("format" in this.ydlOpts) {
-        if (typeof this.ydlOpts["format"] === "string") {
-          delete this.ydlOpts["format"];
-        }
-
-      }
-
-    }
-
   }
 
   public async submitYdlItem() {
@@ -197,6 +194,7 @@ export default class YdlItemEdit extends Vue {
         info: this.readUrlInfo
       }
       await dispatchUpdateYdlItem(this.$store, {id: this.currentYtdItem.id, ydlItem: ydlItemUpdate});
+
     } else {
       if (this.ydlObj.url) {
 
@@ -204,40 +202,14 @@ export default class YdlItemEdit extends Vue {
           ...this.ydlObj,
           info: this.readUrlInfo
         }
+        this.ydlObj['do_calculate_pattern'] = this.formInputs.doCalculatePattern;
+        this.ydlObj['ydl_opts'] = this.ydlOptsFull;
 
-        // let ydlOpts = {};
-
-        // if (this.selectedFormat > 0) {
-        //   ydlOpts = {
-        //     ...ydlOpts,
-        //     "format": this.selectedFormat
-        //   }
-        // }
-
-        // if (!this.isPlaylist) {
-        //   ydlOpts = {
-        //     ...ydlOpts,
-        //     'noplaylist': true
-        //   }
-        // }
-
-        // if (this.isOnlyAudio) {
-        //   ydlOpts = {
-        //     ...ydlOpts,
-        //     'format': 'bestaudio/best',
-        //     'postprocessors': [{
-        //       'key': 'FFmpegExtractAudio',
-        //       'preferredcodec': 'mp3',
-        //       'preferredquality': '192',
-        //     }],
-        //   }
-        // }
-        this.ydlObj['ydl_opts'] = this.ydlOpts;
-        console.log(this.ydlObj);
-        // await dispatchCreateYdlItem(this.$store, this.ydlObj);
+        await dispatchCreateYdlItem(this.$store, this.ydlObj);
       }
     }
 
+    this.$router.push("/ydl/list");
 
   }
 
@@ -247,34 +219,9 @@ export default class YdlItemEdit extends Vue {
 <style scoped>
 
 .input-container {
-  width: 740px;
+  /*width: 70%;*/
   margin: 0 auto;
   text-align: left;
 }
 
-.form-group {
-  margin: 10px 0;
-
-}
-
-.form-group label {
-  display: block;
-  padding: 5px 0;
-}
-
-.form-group input {
-  width: 100%;
-}
-
-.form-group textarea {
-  width: 100%;
-}
-
-.form-group-check {
-
-}
-
-.btn input {
-  min-width: 100px;
-}
 </style>

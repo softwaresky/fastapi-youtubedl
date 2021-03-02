@@ -81,6 +81,7 @@
 
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
+import YdlItemEdit from "@/views/ydl-item/YdlItemEdit.vue";
 import {dispatchCreateYdlItem, dispatchGetYdlItems, dispatchUpdateYdlItem, dispatchGetYdlItemsData, dispatchRemoveYdlItem} from '@/store/ytdl_item/actions';
 import {readAllYtdItems} from '@/store/ytdl_item/getters';
 import moment from 'moment';
@@ -94,21 +95,22 @@ enum statusName {
   Finished = 4,
 }
 
-@Component
+@Component({
+  components: {
+    YdlItemEdit
+  }
+})
 export default class YdlItemsView extends Vue {
-
-  public isLoading = false;
 
   public async mounted() {
     // await dispatchGetYdlItems(this.$store);
     this.dispatchGetYdlItemsData();
     setInterval(this.dispatchGetYdlItemsData,6000);
+
   }
 
   public async dispatchGetYdlItemsData() {
-    this.isLoading = true;
     await dispatchGetYdlItemsData(this.$store);
-    this.isLoading = false;
   }
 
   get allYdlItems() {
@@ -144,14 +146,15 @@ export default class YdlItemsView extends Vue {
     return percentage;
   }
 
+
   public clickedAddNew() {
     this.$router.push("/ydl/new");
   }
+
   public async removeItem(id: number) {
     await dispatchRemoveYdlItem(this.$store, {id: id});
   }
   public customQueryButtonsForRow(row: any) {
-    console.log(row);
 
     return [
       {
