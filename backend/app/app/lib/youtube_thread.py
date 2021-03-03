@@ -191,13 +191,22 @@ def get_url_info(url="", ydl_opts={}):
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             try:
                 dict_info = ydl.extract_info(url, download=False)
-                lst_audio_formats = [format_ for format_ in dict_info.get("formats", []) if format_.get('vcodec') == 'none']
-                lst_video_formats = [format_ for format_ in dict_info.get("formats", []) if format_.get('vcodec') != 'none']
+
+                lst_format_sorted = sorted(dict_info.get("formats", []), key=lambda item: (item["height"] if item.get("height") else 0,
+                                                                                           item["quality"] if item.get("quality") else 0,
+                                                                                           item["fps"] if item.get("fps")else 0,
+                                                                                           item["vbr"] if item.get("vbr") else 0,
+                                                                                           item["tbr"] if item.get("tbr") else 0))
+
+
+                lst_audio_formats = [format_ for format_ in lst_format_sorted if format_.get('vcodec') == 'none']
+                lst_video_formats = [format_ for format_ in lst_format_sorted if format_.get('vcodec') != 'none']
+                dict_info["formats"] = lst_format_sorted
                 dict_info["best_audio_format"] = lst_audio_formats[-1] if lst_audio_formats else {}
                 dict_info["best_video_format"] = lst_video_formats[-1] if lst_video_formats else {}
                 dict_info["prepare_filename"] = os.path.join(settings.YOUTUBE_DL_DST, ydl.prepare_filename(dict_info))
                 return dict_info
-            except:
-                pass
+            except Exception as err:
+                logger.error(f"{err}")
 
     return {}
