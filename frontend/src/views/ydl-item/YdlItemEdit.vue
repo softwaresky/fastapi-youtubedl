@@ -3,26 +3,32 @@
     <h3>Add new Youtube for download</h3>
     <el-form ref="form" :model="formInputs" :rules="rules" label-width="120px">
       <el-form-item label="Youtube Url: " prop="url">
-        <el-input v-model="formInputs.url" @input="changedUrlInput" placeholder="https://www.youtube.com/..."></el-input>
+        <el-input v-model="formInputs.url" @input="changedUrlInput"
+                  placeholder="https://www.youtube.com/..."></el-input>
       </el-form-item>
-      <el-form-item label="Format: " >
+      <el-form-item label="Format: ">
         <el-select v-model="formInputs.format">
-          <el-option value="0" label="best"> </el-option>
-          <el-option v-for="(format, index) in readUrlInfo.formats" :key="index" :value="format.format_id" :label="`${format.format} ${format.fps} ${format.ext}`">
+          <el-option value="0" label="best"></el-option>
+          <el-option v-for="(format, index) in readUrlInfo.formats" :key="index" :value="format.format_id"
+                     :label="readUrlInfo.best_video_format.format_id === format.format_id ||
+                     readUrlInfo.best_audio_format.format_id === format.format_id ?
+                     format.format + ' ' + format.fps + ' ' + format.ext + ' (best)':
+                     format.format + ' ' + format.fps + ' ' + format.ext">
           </el-option>
         </el-select>
       </el-form-item>
 
       <el-form-item label="">
-        <el-checkbox v-model="formInputs.isPlaylist" >Playlist</el-checkbox>
-        <el-checkbox v-model="formInputs.isOnlyAudio" >Only Audio</el-checkbox>
-        <el-checkbox v-model="formInputs.doCalculatePattern" >Auto calculate pattern</el-checkbox>
+        <el-checkbox v-model="formInputs.isPlaylist">Playlist</el-checkbox>
+        <el-checkbox v-model="formInputs.isOnlyAudio">Only Audio</el-checkbox>
+        <el-checkbox v-model="formInputs.doCalculatePattern">Auto calculate pattern</el-checkbox>
       </el-form-item>
 
       <el-form-item label="">
-        <el-collapse >
-          <el-collapse-item title="Advanced options"  >
-            <el-input type="textarea" v-model="formInputs.ydlOptsAddStr" placeholder="Add more options" :rows="5" ></el-input>
+        <el-collapse>
+          <el-collapse-item title="Advanced options">
+            <el-input type="textarea" v-model="formInputs.ydlOptsAddStr" placeholder="Add more options"
+                      :rows="5"></el-input>
           </el-collapse-item>
         </el-collapse>
         <div v-if="!ydlOptsAddValidate">
@@ -31,11 +37,11 @@
           </p>
         </div>
         <div>
-          {{ydlOptsFull}}
+          {{ ydlOptsFull }}
         </div>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="submitYdlItem">{{btnTitle}}</el-button>
+        <el-button type="primary" @click="submitYdlItem">{{ btnTitle }}</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -76,7 +82,7 @@ export default class YdlItemEdit extends Vue {
 
   public rules = {
     url: [
-      { required: true, message: 'Please input youtube url', trigger: 'blur' }
+      {required: true, message: 'Please input youtube url', trigger: 'blur'}
     ]
   };
 
@@ -84,11 +90,12 @@ export default class YdlItemEdit extends Vue {
   public ydlOptsAddValidate = true;
 
   get btnTitle() {
-    if (this.currentYtdItem ) {
+    if (this.currentYtdItem) {
       return "Edit"
     }
     return "Create"
   }
+
   get currentYtdItem() {
 
     if (this.data && this.data.id > 0) {
@@ -101,7 +108,7 @@ export default class YdlItemEdit extends Vue {
     return readYtdUrlInfo(this.$store);
   }
 
-  get ydlOptsValues () {
+  get ydlOptsValues() {
 
     let ydlOpts = {}
 
@@ -127,9 +134,7 @@ export default class YdlItemEdit extends Vue {
           'preferredquality': '192',
         }],
 
-        // extractaudio: true,
-        // audioformat: "mp3",
-    }
+      }
 
       if (!("format" in ydlOpts)) {
         ydlOpts = {
@@ -139,11 +144,10 @@ export default class YdlItemEdit extends Vue {
       }
     }
 
-
     return ydlOpts;
   }
 
-  get ydlOptsFull () {
+  get ydlOptsFull() {
 
     let ydlOptsAdd = {};
     try {
@@ -170,10 +174,9 @@ export default class YdlItemEdit extends Vue {
         doCalculatePattern: this.currentYtdItem.do_calculate_pattern
       };
     }
-
   }
 
-  public async changedUrlInput() {
+  public async dispatchUrlInfo() {
 
     if (this.formInputs.url) {
       this.ydlObj.url = this.formInputs.url;
@@ -184,6 +187,10 @@ export default class YdlItemEdit extends Vue {
       }
       await dispatchGetYdlUrlInfo(this.$store, urlInfo);
     }
+  }
+
+  public async changedUrlInput() {
+    await this.dispatchUrlInfo();
   }
 
   public async submitYdlItem() {
@@ -197,6 +204,10 @@ export default class YdlItemEdit extends Vue {
 
     } else {
       if (this.ydlObj.url) {
+
+        if (!this.readUrlInfo || (this.readUrlInfo && Object.keys(this.readUrlInfo).length === 0)) {
+          await this.dispatchUrlInfo();
+        }
 
         this.ydlObj = {
           ...this.ydlObj,

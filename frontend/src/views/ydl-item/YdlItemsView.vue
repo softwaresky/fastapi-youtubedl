@@ -21,7 +21,7 @@
           sortable
       >
         <template slot-scope="scope">
-          <a :href="scope.row.url">{{scope.row.url}}</a>
+          <a :href="scope.row.url">{{ columnFormatter(scope.row, scope.column) }}</a>
         </template>
       </el-table-column>
       <el-table-column
@@ -60,6 +60,7 @@
       <el-table-column
           label="Add. Options"
           prop="ydl_opts"
+          :formatter="columnFormatter"
       />
       <el-table-column label="Actions" width="370">
         <template slot-scope="scope">
@@ -121,6 +122,7 @@ export default class YdlItemsView extends Vue {
 
     const cellValue = row[column.property];
 
+
     if (column.property.includes('time')) {
       if (cellValue) {
         return moment(cellValue).format('MM/DD/YY HH:mm');
@@ -131,19 +133,31 @@ export default class YdlItemsView extends Vue {
       }
     } else if (column.property === 'status') {
       return statusName[cellValue];
+    } else if (column.property === "ydl_opts") {
+      return JSON.stringify(cellValue);
+    } else if (column.property === "url") {
+
+      if (row.info && "title" in row.info) {
+        return row.info.title;
+      }
     }
 
     return cellValue;
   }
 
   public customProgress(row: any) {
+
     let percentage = 0;
 
-    if (row.output_log && row.output_log.hasOwnProperty('downloaded_bytes')) {
-      percentage = ((row.output_log.downloaded_bytes / row.output_log.total_bytes) * 100);
-
+    if (row.status === 4) {
+      percentage = 100.00;
+    } else {
+      if (row.output_log && row.output_log.hasOwnProperty('downloaded_bytes')) {
+        percentage = ((row.output_log.downloaded_bytes / row.output_log.total_bytes) * 100);
+      }
     }
-    return percentage;
+
+    return Math.round(percentage);
   }
 
 
