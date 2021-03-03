@@ -17,19 +17,18 @@ engine = create_engine(settings.SQLALCHEMY_DATABASE_URI, pool_pre_ping=True, con
 class SQLAlchemyDBConnection:
 
     """SQLAlchemy database connection"""
-    def __init__(self, connection_string=""):
-        self.connection_string = connection_string if connection_string else settings.SQLALCHEMY_DATABASE_URI
+    def __init__(self):
         self.session = None
-        self.SessionLocal = None
+        self.engine = None
 
     def __enter__(self):
         # engine = create_engine(self.connection_string, pool_pre_ping=True, connect_args={"check_same_thread": False})
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-        self.session = self.SessionLocal()
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        self.session = SessionLocal()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.session.close()
 
-with SQLAlchemyDBConnection() as db:
-    SessionLocal = db.SessionLocal
+    def check_db_is_awake(self):
+        self.session.execute("SELECT 1")

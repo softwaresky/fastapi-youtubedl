@@ -1,10 +1,10 @@
 from typing import Generator
-# from app.db.session import SessionLocal
 from app.db.session import SQLAlchemyDBConnection
 
 def get_db() -> Generator:
-    try:
-        with SQLAlchemyDBConnection() as db:
+
+    with SQLAlchemyDBConnection() as db:
+        try:
             yield db.session
-    finally:
-        db.session.close()
+        finally:
+            db.session.close()

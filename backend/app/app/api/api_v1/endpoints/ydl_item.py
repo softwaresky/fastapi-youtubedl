@@ -1,6 +1,6 @@
 from typing import Any, List, Dict
 
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from app.lib.youtube_thread import ThreadManager, get_url_info
@@ -10,10 +10,7 @@ from app.api import deps
 
 router = APIRouter()
 
-thread_manager = ThreadManager(db_obj=deps.SQLAlchemyDBConnection)
-
-
-# thread_manager.start()
+thread_manager = ThreadManager(db_conn=deps.SQLAlchemyDBConnection)
 
 
 @router.on_event("startup")
