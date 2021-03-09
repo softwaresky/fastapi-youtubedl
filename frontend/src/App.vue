@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div id="nav">
-      <router-link to="/ydl/list">List</router-link>
+      <router-link to="/">List</router-link>
     </div>
     <div>
       <router-view />
