@@ -6,7 +6,7 @@ Vue.use(VueRouter);
 const routes: Array<RouteConfig> = [
   {
     path: "/",
-    component: () => import(/* webpackChunkName: "about" */ "@/views/ydl-item/YdlItemsView.vue")
+    redirect: "/ydl/list"
   },
   {
     path: "/ydl/new",
@@ -22,9 +22,9 @@ const routes: Array<RouteConfig> = [
     path: "/ydl/list",
     component: () => import(/* webpackChunkName: "about" */ "@/views/ydl-item/YdlItemsView.vue")
   },
-  // {
-  //   path: '/*', redirect: '/',
-  // },
+  {
+    path: '/*', redirect: '/',
+  },
 ];
 
 const router = new VueRouter({

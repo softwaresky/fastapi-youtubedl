@@ -11,7 +11,6 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("youtube_thread")
 
-# lock = threading.Lock()
 
 class YdlLogger(object):
 
@@ -35,7 +34,6 @@ class ThreadYoutubeDl(threading.Thread):
         self.ydl_object = ydl_object
         self.logger = YdlLogger()
         self.dict_data = {}
-        self.dict_status_count = {}
 
         self.ydl_opts = {
             'logger': self.logger,
@@ -45,16 +43,16 @@ class ThreadYoutubeDl(threading.Thread):
         self.is_running = False
         self.status = 1
 
-    # def __del__(self):
-    #     logger.info(f"{self.name}: __del__ => {self.is_alive()}")
-    #     self.join()
+    def __del__(self):
+        logger.info(f"__del__ => {self.is_alive()}")
+        self.join()
 
     def ydl_item_hook(self, d):
 
         self.dict_data.update(d)
 
-        # if d['status'] == 'finished':
-        #     print('Done downloading, now converting ...')
+        if d['status'] == 'finished':
+            print('Done downloading, now converting ...')
 
     def get_data(self):
         return self.dict_data
@@ -75,10 +73,6 @@ class ThreadYoutubeDl(threading.Thread):
             self.dict_data["err"] = f"{err}"
             self.is_running = False
             self.status = 3
-
-        if self.dict_data.get("error"):
-            self.status = 3
-
 
     def download_urls(self, url: str = "", do_calculate_pattern: bool = False):
 
@@ -110,9 +104,7 @@ class ThreadManager(threading.Thread):
 
     def __init__(self, db_conn = None):
         threading.Thread.__init__(self)
-        self.daemon = True
         self.dict_manager = {}
-        # self.lock = threading.Lock()
         self.db_conn = db_conn
 
     def __del__(self):
@@ -153,11 +145,7 @@ class ThreadManager(threading.Thread):
 
     def remove_object(self, object_id=0):
         if object_id in self.dict_manager:
-            logger.info(f"[{self.dict_manager[object_id]}] {self.dict_manager[object_id].is_alive()}")
-            if not self.dict_manager[object_id].is_alive():
-                self.dict_manager[object_id].join()
-                del self.dict_manager[object_id]
-                logger.info(f"Removed: [{object_id}]")
+            del self.dict_manager[object_id]
 
     def run(self) -> None:
 
@@ -165,6 +153,7 @@ class ThreadManager(threading.Thread):
 
             if self.db_conn:
                 with self.db_conn() as db:
+
                     for ydl_item_ in crud.ydl_item.get_multi_by_status(db=db.session):
                         dict_update = {}
 
@@ -172,27 +161,29 @@ class ThreadManager(threading.Thread):
                             if len(self.dict_manager) < settings.MAXIMUM_QUEUE:
                                 if ydl_item_.id not in self.dict_manager:
                                     self.dict_manager[ydl_item_.id] = ThreadYoutubeDl(ydl_object=ydl_item_)
+                                    logger.info(f"Created: [{ydl_item_.id}] {self.dict_manager[ydl_item_.id]}")
+                                if not self.dict_manager[ydl_item_.id].is_alive():
                                     self.dict_manager[ydl_item_.id].start()
-                                    logger.info(f"Created: [{ydl_item_.id}] {self.dict_manager[ydl_item_.id]} -> is_alive: {self.dict_manager[ydl_item_.id].is_alive()}")
+                                    logger.info(f"Start: [{ydl_item_.id}] {self.dict_manager[ydl_item_.id]} -> {self.dict_manager[ydl_item_.id].is_alive()}")
                                     dict_update["status"] = 2
                                     dict_update["output_log"] = self.get_object_data(id=ydl_item_.id)
 
                             else:
                                 logger.info(f"Queue is full. {len(self.dict_manager)}")
-
+                        # else:
                         thread_obj_ = self.dict_manager.get(ydl_item_.id)
                         if thread_obj_ and not thread_obj_.is_running:
                             dict_update["status"] = thread_obj_.status
                             dict_update["output_log"] = thread_obj_.get_data()
 
+                            if thread_obj_.status == 4:
+                                self.remove_object(ydl_item_.id)
+                                logger.info(f"Removed: [{ydl_item_.id}]")
+
                         if dict_update:
-                            ydl_item_ = crud.ydl_item.update(db=db.session, db_obj=ydl_item_, obj_in=dict_update)
-                            logger.info(f"Updated: [{ydl_item_.id}]")
+                            crud.ydl_item.update(db=db.session, db_obj=ydl_item_, obj_in=dict_update)
 
-                        if ydl_item_.status == 4:
-                            self.remove_object(ydl_item_.id)
-
-            time.sleep(0.5)
+                        time.sleep(0.5)
 
 def get_url_info(url="", ydl_opts={}):
 
