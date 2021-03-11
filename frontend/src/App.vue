@@ -11,12 +11,22 @@
 </template>
 
 <style>
+
+body {
+  color: #f8f8f2 !important;
+  background: #282a36 !important;
+}
+
+label {
+  color: #f8f8f2 !important;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+
 
   width: 70%;
   margin: 0 auto;
@@ -28,10 +38,10 @@
 
 #nav a {
   font-weight: bold;
-  color: #2c3e50;
+  color: #50fa7b !important;
 }
 
 #nav a.router-link-exact-active {
-  color: #42b983;
+  color: #50fa7b !important;
 }
 </style>
