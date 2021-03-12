@@ -11,22 +11,14 @@
 </template>
 
 <style>
-
-body {
-  color: #f8f8f2 !important;
-  background: #282a36 !important;
-}
-
-label {
-  color: #f8f8f2 !important;
-}
+@import "assets/styles/dark-style.css";
 
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-
+  /*color: #2c3e50;*/
 
   width: 70%;
   margin: 0 auto;
@@ -38,10 +30,10 @@ label {
 
 #nav a {
   font-weight: bold;
-  color: #50fa7b !important;
+  /*color: #2c3e50;*/
 }
 
 #nav a.router-link-exact-active {
-  color: #50fa7b !important;
+  /*color: #42b983;*/
 }
 </style>
