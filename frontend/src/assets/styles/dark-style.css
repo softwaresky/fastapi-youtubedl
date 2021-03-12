@@ -15,28 +15,27 @@ input, textarea {
 
 
 .el-collapse div{
-	background: transparent;
+	background: transparent !important;
+}
+
+.el-scrollbar {
+	background-color: #282a36 !important;
+	border: 1px solid #f8f8f2;
 }
 
 .el-button {
 	background: #6272a4 !important;
 }
 
-.el-table, .el-table * {
+.sc-table *:not(.el-progress, .el-progress *, .el-input, .el-input *) {
 	background: transparent !important;
-}
-
-.el-scrollbar {
-	background-color: #282a36;
 }
 
 .el-select-dropdown__item.hover, .el-select-dropdown__item:hover {
 	background: #44475a !important;
 }
 
-.el-pagination button, .el-pagination ul * {
-	background: transparent !important;
-}
+
 
 #nav a{
 	color: #479c5b !important;
