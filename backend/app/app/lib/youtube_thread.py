@@ -11,7 +11,6 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("youtube_thread")
 
-# lock = threading.Lock()
 
 class YdlLogger(object):
 
@@ -32,6 +31,7 @@ class ThreadYoutubeDl(threading.Thread):
 
     def __init__(self, ydl_object: models.YdlItem = None):
         threading.Thread.__init__(self)
+
         self.ydl_object = ydl_object
         self.logger = YdlLogger()
         self.dict_data = {}
@@ -44,6 +44,8 @@ class ThreadYoutubeDl(threading.Thread):
         self.ydl_opts.update(ydl_object.ydl_opts)
         self.is_running = False
         self.status = 1
+
+
 
     # def __del__(self):
     #     logger.info(f"{self.name}: __del__ => {self.is_alive()}")
@@ -110,10 +112,11 @@ class ThreadManager(threading.Thread):
 
     def __init__(self, db_conn = None):
         threading.Thread.__init__(self)
+
         self.daemon = True
         self.dict_manager = {}
-        # self.lock = threading.Lock()
         self.db_conn = db_conn
+
 
     def __del__(self):
 
@@ -154,8 +157,12 @@ class ThreadManager(threading.Thread):
     def remove_object(self, object_id=0):
         if object_id in self.dict_manager:
             logger.info(f"[{self.dict_manager[object_id]}] {self.dict_manager[object_id].is_alive()}")
-            if not self.dict_manager[object_id].is_alive():
+
+            if self.dict_manager[object_id].is_alive():
                 self.dict_manager[object_id].join()
+
+            if not self.dict_manager[object_id].is_alive():
+                # self.dict_manager[object_id].join()
                 del self.dict_manager[object_id]
                 logger.info(f"Removed: [{object_id}]")
 
@@ -172,6 +179,7 @@ class ThreadManager(threading.Thread):
                             if len(self.dict_manager) < settings.MAXIMUM_QUEUE:
                                 if ydl_item_.id not in self.dict_manager:
                                     self.dict_manager[ydl_item_.id] = ThreadYoutubeDl(ydl_object=ydl_item_)
+                                    self.dict_manager[ydl_item_.id].deamon = True
                                     self.dict_manager[ydl_item_.id].start()
                                     logger.info(f"Created: [{ydl_item_.id}] {self.dict_manager[ydl_item_.id]} -> is_alive: {self.dict_manager[ydl_item_.id].is_alive()}")
                                     dict_update["status"] = 2
