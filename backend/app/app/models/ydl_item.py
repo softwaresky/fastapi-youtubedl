@@ -5,7 +5,7 @@ from app.db.base_class import Base
 
 class YdlItem(Base):
 
-    __tablename__ = "ytditem"
+    __tablename__ = "ydlitem"
 
     id = Column(Integer, primary_key=True, index=True)
     url = Column(String)

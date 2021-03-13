@@ -17,11 +17,9 @@ COPY ./app/requirements.txt /app/requirements.txt
 RUN pip3 install --requirement /app/requirements.txt
 
 COPY ./app /app
-WORKDIR /app/
+WORKDIR /app
 
 ENV PYTHONPATH=/app
-
-EXPOSE 5678
 
 # Run the start script, it will check for an /app/prestart.sh script (e.g. for migrations)
 # And then will start Gunicorn with Uvicorn

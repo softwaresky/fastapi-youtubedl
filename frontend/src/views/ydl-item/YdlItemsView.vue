@@ -112,6 +112,7 @@ export default class YdlItemsView extends Vue {
 
   public async dispatchGetYdlItemsData() {
     await dispatchGetYdlItemsData(this.$store);
+    // await dispatchGetYdlItems(this.$store);
   }
 
   get allYdlItems() {

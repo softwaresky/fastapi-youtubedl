@@ -68,7 +68,11 @@ def read_items_data(
         for item_ in lst_items:
             dict_data_ = thread_manager.get_object_data(item_.id)
             if dict_data_:
-                item_.output_log = dict_data_
+                if item_.output_log:
+                    if dict_data_.get("downloaded_bytes", 0) >= item_.output_log.get("downloaded_bytes", 0):
+                        item_.output_log = dict_data_
+                else:
+                    item_.output_log = dict_data_
             lst_result.append(item_)
 
     return lst_result
@@ -156,9 +160,9 @@ def delete_item(
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
+    item = crud.ydl_item.remove(db=db, id=id)
+
     if item:
         thread_manager.remove_object(object_id=item.id)
-
-    item = crud.ydl_item.remove(db=db, id=id)
 
     return item
