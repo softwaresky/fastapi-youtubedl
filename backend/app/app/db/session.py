@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
+from contextlib import contextmanager
 import os
 import logging
 
@@ -15,24 +16,13 @@ if "sqlite" in db_driver:
         logger.info(f"Created dir: {db_dir}")
 
 engine = create_engine(settings.SQLALCHEMY_DATABASE_URI, pool_pre_ping=True, connect_args={"check_same_thread": False})
-# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 logger.info(f"Created engine: {engine}")
 
-class SQLAlchemyDBConnection:
-
-    """SQLAlchemy database connection"""
-    def __init__(self):
-        self.session = None
-        self.engine = engine
-
-    def __enter__(self):
-        # engine = create_engine(self.connection_string, pool_pre_ping=True, connect_args={"check_same_thread": False})
-        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
-        self.session = SessionLocal()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.session.close()
-
-    def check_db_is_awake(self):
-        self.session.execute("SELECT 1")
+@contextmanager
+def db_connection():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

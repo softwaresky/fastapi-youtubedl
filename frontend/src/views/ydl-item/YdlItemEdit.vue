@@ -8,7 +8,7 @@
       </el-form-item>
       <el-form-item label="Format: ">
         <el-select v-model="formInputs.format">
-          <el-option value="0" label="best"></el-option>
+          <el-option value="best" label="best"></el-option>
           <el-option v-for="(format, index) in readUrlInfo.formats" :key="index" :value="format.format_id"
                      :label="readUrlInfo.best_video_format.format_id === format.format_id ||
                      readUrlInfo.best_audio_format.format_id === format.format_id ?
@@ -73,7 +73,7 @@ export default class YdlItemEdit extends Vue {
   };
   public formInputs = {
     url: "",
-    format: "0",
+    format: "best",
     isPlaylist: false,
     isOnlyAudio: false,
     doCalculatePattern: false,
@@ -112,12 +112,11 @@ export default class YdlItemEdit extends Vue {
 
     let ydlOpts = {}
 
-    if (this.formInputs.format > "0") {
-      ydlOpts = {
-        ...ydlOpts,
-        format: this.formInputs.format
-      }
+    ydlOpts = {
+      ...ydlOpts,
+      format: this.formInputs.format
     }
+
     if (!this.formInputs.isPlaylist) {
       ydlOpts = {
         ...ydlOpts,
@@ -136,7 +135,7 @@ export default class YdlItemEdit extends Vue {
 
       }
 
-      if (!("format" in ydlOpts)) {
+      if (this.formInputs.format === "best") {
         ydlOpts = {
           ...ydlOpts,
           format: 'bestaudio/best',

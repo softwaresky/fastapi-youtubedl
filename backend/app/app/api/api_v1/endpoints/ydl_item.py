@@ -10,7 +10,7 @@ from app.api import deps
 
 router = APIRouter()
 
-thread_manager = ThreadManager(db_conn=deps.SQLAlchemyDBConnection)
+thread_manager = ThreadManager(db_conn=deps.db_connection)
 
 
 @router.on_event("startup")
