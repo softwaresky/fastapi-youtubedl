@@ -11,12 +11,14 @@
 </template>
 
 <style>
+@import "assets/styles/dark-style.css";
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  /*color: #2c3e50;*/
 
   width: 70%;
   margin: 0 auto;
@@ -28,10 +30,10 @@
 
 #nav a {
   font-weight: bold;
-  color: #2c3e50;
+  /*color: #2c3e50;*/
 }
 
 #nav a.router-link-exact-active {
-  color: #42b983;
+  /*color: #42b983;*/
 }
 </style>

@@ -8,7 +8,7 @@
       </el-form-item>
       <el-form-item label="Format: ">
         <el-select v-model="formInputs.format">
-          <el-option value="0" label="best"></el-option>
+          <el-option value="best" label="best"></el-option>
           <el-option v-for="(format, index) in readUrlInfo.formats" :key="index" :value="format.format_id"
                      :label="readUrlInfo.best_video_format.format_id === format.format_id ||
                      readUrlInfo.best_audio_format.format_id === format.format_id ?
@@ -73,7 +73,7 @@ export default class YdlItemEdit extends Vue {
   };
   public formInputs = {
     url: "",
-    format: "0",
+    format: "best",
     isPlaylist: false,
     isOnlyAudio: false,
     doCalculatePattern: false,
@@ -101,7 +101,7 @@ export default class YdlItemEdit extends Vue {
     if (this.data && this.data.id > 0) {
       return this.data;
     }
-    return readYtdItem(this.$store)(+this.$router.currentRoute.params.id)
+    return readYtdItem(this.$store)(+this.$router.currentRoute.params['id'])
   }
 
   get readUrlInfo() {
@@ -112,12 +112,11 @@ export default class YdlItemEdit extends Vue {
 
     let ydlOpts = {}
 
-    if (this.formInputs.format > "0") {
-      ydlOpts = {
-        ...ydlOpts,
-        format: this.formInputs.format
-      }
+    ydlOpts = {
+      ...ydlOpts,
+      format: this.formInputs.format
     }
+
     if (!this.formInputs.isPlaylist) {
       ydlOpts = {
         ...ydlOpts,
@@ -136,7 +135,7 @@ export default class YdlItemEdit extends Vue {
 
       }
 
-      if (!("format" in ydlOpts)) {
+      if (this.formInputs.format === "best") {
         ydlOpts = {
           ...ydlOpts,
           format: 'bestaudio/best',
@@ -179,11 +178,17 @@ export default class YdlItemEdit extends Vue {
   public async dispatchUrlInfo() {
 
     if (this.formInputs.url) {
-      this.ydlObj.url = this.formInputs.url;
+      // this.ydlObj.url = this.formInputs.url;
+      // this.ydlObj['ydl_opts'] = this.ydlOptsFull;
+      //
+      // const urlInfo: YdlUrlInfoCreate = {
+      //   url: this.ydlObj.url,
+      //   'ydl_opts': this.ydlObj.ydl_opts
+      // }
 
       const urlInfo: YdlUrlInfoCreate = {
-        url: this.ydlObj.url,
-        'ydl_opts': this.ydlObj.ydl_opts
+        url: this.formInputs.url,
+        'ydl_opts': this.ydlOptsFull
       }
       await dispatchGetYdlUrlInfo(this.$store, urlInfo);
     }
@@ -195,32 +200,39 @@ export default class YdlItemEdit extends Vue {
 
   public async submitYdlItem() {
 
+    const newYdl: YdlItemCreate = {
+      url: this.formInputs.url,
+      'do_calculate_pattern': this.formInputs.doCalculatePattern,
+      'ydl_opts': this.ydlOptsFull,
+      info: this.readUrlInfo,
+      status: 1
+    };
+
     if (this.currentYtdItem) {
       const ydlItemUpdate: YdlItemUpdate = {
-        ...this.ydlObj,
-        info: this.readUrlInfo
+        ...newYdl
       }
       await dispatchUpdateYdlItem(this.$store, {id: this.currentYtdItem.id, ydlItem: ydlItemUpdate});
 
     } else {
-      if (this.ydlObj.url) {
+      if (this.formInputs.url) {
 
         if (!this.readUrlInfo || (this.readUrlInfo && Object.keys(this.readUrlInfo).length === 0)) {
           await this.dispatchUrlInfo();
         }
 
-        this.ydlObj = {
-          ...this.ydlObj,
-          info: this.readUrlInfo
-        }
-        this.ydlObj['do_calculate_pattern'] = this.formInputs.doCalculatePattern;
-        this.ydlObj['ydl_opts'] = this.ydlOptsFull;
+        // this.ydlObj = {
+        //   ...this.ydlObj,
+        //   info: this.readUrlInfo
+        // }
+        // this.ydlObj['do_calculate_pattern'] = this.formInputs.doCalculatePattern;
+        // this.ydlObj['ydl_opts'] = this.ydlOptsFull;
 
-        await dispatchCreateYdlItem(this.$store, this.ydlObj);
+        await dispatchCreateYdlItem(this.$store, newYdl);
       }
     }
 
-    this.$router.push("/ydl/list");
+    this.$router.push("/");
 
   }
 

@@ -21,8 +21,6 @@ WORKDIR /app/
 
 ENV PYTHONPATH=/app
 
-EXPOSE 5678
-
 # Run the start script, it will check for an /app/prestart.sh script (e.g. for migrations)
 # And then will start Gunicorn with Uvicorn
 CMD ["/start.sh"]

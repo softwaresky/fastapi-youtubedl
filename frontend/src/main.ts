@@ -11,6 +11,7 @@ import { DataTables, DataTablesServer} from 'vue-data-tables';
 Vue.use(ElementUI, {locale});
 Vue.use(DataTables);
 
+Vue.config.devtools = true
 Vue.config.productionTip = false;
 
 new Vue({
