@@ -9,7 +9,6 @@ app = FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/o
 
 
 folder = "/vue"
-# app.mount("/static", StaticFiles(directory="/vue/dist"), name="static")
 app.mount("/static", StaticFiles(directory=folder), name="static")
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
