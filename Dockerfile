@@ -2,9 +2,12 @@ FROM node:14 as build-stage
 
 COPY ./frontend /vue
 WORKDIR /vue
-
 RUN npm install && npm run build
 
+#FROM nginx as production-stage
+#
+#COPY --from=build-stage /vue/dist /usr/share/nginx/html
+#COPY nginx.conf /etc/nginx/nginx.conf
 
 FROM python:3.8
 
@@ -25,9 +28,9 @@ COPY ./backend/app/requirements.txt /app/requirements.txt
 RUN apt-get update && apt-get install -y && rm -rf /var/lib/apt/lists
 RUN pip3 install --requirement /app/requirements.txt
 
-COPY --from=build-stage /vue/dist /vue/dist
-COPY ./backend/app /app
+COPY --from=build-stage /vue/dist /vue
 
+COPY ./backend/app /app
 ENV PYTHONPATH=/app
 
 CMD ["/start.sh"]

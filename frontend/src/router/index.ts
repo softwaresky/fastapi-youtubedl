@@ -1,5 +1,7 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
+import YdlItemEdit from "@/views/ydl-item/YdlItemEdit.vue";
+import YdlItemsView from "@/views/ydl-item/YdlItemsView.vue";
 
 Vue.use(VueRouter);
 
@@ -11,24 +13,25 @@ const routes: Array<RouteConfig> = [
   {
     path: "/ydl/new",
     name: "ydl-new",
-    component: () => import(/* webpackChunkName: "about" */ "@/views/ydl-item/YdlItemEdit.vue")
+    component: YdlItemEdit
   },
   {
     path: "/ydl/edit/:id",
     name: "ydl-edit",
-    component: () => import(/* webpackChunkName: "about" */ "@/views/ydl-item/YdlItemEdit.vue")
+    component: YdlItemEdit
   },
   {
     path: "/ydl/list",
-    component: () => import(/* webpackChunkName: "about" */ "@/views/ydl-item/YdlItemsView.vue")
+    component: YdlItemsView
   },
-  // {
-  //   path: "/*", redirect: "/",
-  // },
+  {
+    path: "/*",
+    redirect: "/"
+  },
 ];
 
 const router = new VueRouter({
-  mode: "history",
+  // mode: "history",
   base: process.env.BASE_URL,
   routes
 });
