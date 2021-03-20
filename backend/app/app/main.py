@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Request
-from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 from starlette.responses import JSONResponse, HTMLResponse, FileResponse
 from app.api.api_v1.api import api_router

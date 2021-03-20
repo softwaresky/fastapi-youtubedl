@@ -1,14 +1,12 @@
+# Frontend
 FROM node:14 as build-stage
 
 COPY ./frontend /vue
 WORKDIR /vue
 RUN npm install && npm run build
 
-#FROM nginx as production-stage
-#
-#COPY --from=build-stage /vue/dist /usr/share/nginx/html
-#COPY nginx.conf /etc/nginx/nginx.conf
 
+# Backend
 FROM python:3.8
 
 RUN apt-get update
