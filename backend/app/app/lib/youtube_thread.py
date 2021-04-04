@@ -91,6 +91,8 @@ class ThreadYoutubeDl(threading.Thread):
     def download_urls(self, url: str = "", do_calculate_pattern: bool = False):
 
         with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
+            pattern = self.ydl_opts.get("outtmpl")
+
             if "outtmpl" not in self.ydl_opts:
                 pattern = "%(uploader)s/%(playlist)s/%(playlist_index)s - %(title)s.%(ext)s"
 
@@ -109,7 +111,7 @@ class ThreadYoutubeDl(threading.Thread):
                                 pattern = "%(playlist)s/%(chapter_number)s - %(chapter)s/%(title)s.%(ext)s"
                                 break
 
-                ydl.params["outtmpl"] = os.path.abspath(os.path.join(settings.YOUTUBE_DL_DST, pattern))
+            ydl.params["outtmpl"] = os.path.abspath(os.path.join(settings.YOUTUBE_DL_DST, pattern))
 
             self.extra_info = ydl.extract_info(url, download=False)
             self.prepare_filename = ydl.prepare_filename(self.extra_info)

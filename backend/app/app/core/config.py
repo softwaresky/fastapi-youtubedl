@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     SQLALCHEMY_DATABASE_URI: Optional[str] = None
     YOUTUBE_DL_DST: Optional[str] = None
     MAXIMUM_QUEUE = 3
+    STATIC_FOLDER: Optional[str] = ""
 
     class Config:
         case_sensitive = True
