@@ -33,4 +33,5 @@ ENV PYTHONPATH=/app
 
 CMD ["/start.sh"]
 
+# docker run -d --name fastapi-youtubedl-vue --env-file .env -e MAX_WORKERS=2 -e PORT=6696 -p 6696:6696  fastapi-youtubedl-vue
 
