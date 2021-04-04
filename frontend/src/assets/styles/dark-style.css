@@ -13,6 +13,9 @@ input, textarea {
 	background: #44475a !important;
 }
 
+.ydlAddOutputError p {
+	color: #f54949 !important;
+}
 
 .el-collapse div{
 	background: transparent !important;
@@ -24,7 +27,12 @@ input, textarea {
 }
 
 .el-button {
+
 	background: #6272a4 !important;
+}
+
+.el-button:hover {
+	background: #313850 !important;
 }
 
 .sc-table *:not(.el-progress, .el-progress *, .el-input, .el-input *) {
