@@ -18,6 +18,13 @@
         </el-select>
       </el-form-item>
 
+      <el-form-item label="Pattern: " prop="pattern">
+        <el-input v-model="formInputs.pattern" class="input-with-select"
+                  placeholder="enter pattern ex. %(uploader)s/%(playlist)s/%(playlist_index)s - %(title)s.%(ext)s">
+          <el-button slot="append" @click="clickedBtnHelp">?</el-button>
+        </el-input>
+      </el-form-item>
+
       <el-form-item label="">
         <el-checkbox v-model="formInputs.isPlaylist">Playlist</el-checkbox>
         <el-checkbox v-model="formInputs.isOnlyAudio">Only Audio</el-checkbox>
@@ -30,15 +37,21 @@
             <el-input type="textarea" v-model="formInputs.ydlOptsAddStr" placeholder="Add more options"
                       :rows="5"></el-input>
           </el-collapse-item>
+          <div v-if="!ydlOptsAddValidate" class="ydlAddOutputError">
+            <p>
+              * textarea value require JSON structure.
+            </p>
+          </div>
         </el-collapse>
-        <div v-if="!ydlOptsAddValidate">
-          <p>
-            * textarea value require JSON structure.
-          </p>
-        </div>
-        <div>
-          {{ ydlOptsFull }}
-        </div>
+      </el-form-item>
+      <el-form-item label="">
+        <el-collapse>
+          <el-collapse-item title="Full Ydl Options">
+            <div>
+              <pre>{{ ydlOptsFull | pretty }}</pre>
+            </div>
+          </el-collapse-item>
+        </el-collapse>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="submitYdlItem">{{ btnTitle }}</el-button>
@@ -73,6 +86,7 @@ export default class YdlItemEdit extends Vue {
   };
   public formInputs = {
     url: "",
+    pattern: "%(uploader)s/%(playlist)s/%(playlist_index)s - %(title)s.%(ext)s",
     format: "best",
     isPlaylist: false,
     isOnlyAudio: false,
@@ -115,6 +129,13 @@ export default class YdlItemEdit extends Vue {
     ydlOpts = {
       ...ydlOpts,
       format: this.formInputs.format
+    }
+
+    if (this.formInputs.pattern) {
+      ydlOpts = {
+        ...ydlOpts,
+        outtmpl: this.formInputs.pattern
+      }
     }
 
     if (!this.formInputs.isPlaylist) {
@@ -196,6 +217,10 @@ export default class YdlItemEdit extends Vue {
 
   public async changedUrlInput() {
     await this.dispatchUrlInfo();
+  }
+
+  public clickedBtnHelp() {
+    window.open("https://github.com/ytdl-org/youtube-dl#output-template", "_blank");
   }
 
   public async submitYdlItem() {

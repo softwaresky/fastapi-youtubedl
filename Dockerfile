@@ -16,7 +16,6 @@ RUN pip3 install --no-cache-dir "uvicorn[standard]" gunicorn
 
 COPY ./backend/start.sh /start.sh
 RUN chmod +x /start.sh
-
 COPY ./backend/gunicorn_conf.py /gunicorn_conf.py
 
 COPY ./backend/start-reload.sh /start-reload.sh
@@ -33,4 +32,5 @@ ENV PYTHONPATH=/app
 
 CMD ["/start.sh"]
 
+# docker run -d --name fastapi-youtubedl-vue --env-file .env -e MAX_WORKERS=2 -e PORT=6696 -p 6696:6696 -v /youtube-dl:/youtube-dl  fastapi-youtubedl-vue
 
